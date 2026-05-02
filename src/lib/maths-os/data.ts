@@ -6,24 +6,27 @@ export type Game = {
   grad: [string, string];
 };
 
+export type BuiltinAppId = "calculator" | "notes" | "settings" | "messages" | "friends" | "browse";
+
 export type SystemApp = {
   id: string;
   name: string;
   icon: string;
+  /** External URL — opens in a Maths Browse window. */
   url?: string;
-  view?: "home" | "apps" | "games" | "browser" | "messages" | "friends";
+  /** Built-in React app to launch. */
+  builtin?: BuiltinAppId;
 };
 
 export const SYSTEM_APPS: SystemApp[] = [
-  { id: "sys-home", name: "Home", icon: "🏠", view: "home" },
-  { id: "sys-games", name: "Games", icon: "🎮", view: "games" },
-  { id: "sys-browser", name: "Browser", icon: "🌐", view: "browser" },
-  { id: "sys-messages", name: "Messages", icon: "💬", view: "messages" },
-  { id: "sys-friends", name: "Friends", icon: "👥", view: "friends" },
+  { id: "sys-browse", name: "Maths Browse", icon: "🌐", builtin: "browse" },
+  { id: "sys-messages", name: "Messages", icon: "💬", builtin: "messages" },
+  { id: "sys-friends", name: "Friends", icon: "👥", builtin: "friends" },
+  { id: "sys-calc", name: "Calculator", icon: "🧮", builtin: "calculator" },
+  { id: "sys-notes", name: "Notes", icon: "📝", builtin: "notes" },
+  { id: "sys-settings", name: "Settings", icon: "⚙️", builtin: "settings" },
   { id: "sys-maths", name: "Maths Hub", icon: "📐", url: "https://maths.support" },
-  { id: "sys-calc", name: "Calculator", icon: "🧮", url: "https://www.desmos.com/scientific" },
-  { id: "sys-notes", name: "Notes", icon: "📝", url: "https://notion.so" },
-  { id: "sys-search", name: "Search", icon: "🔍", url: "https://google.com" },
+  { id: "sys-search", name: "Search", icon: "🔍", url: "https://duckduckgo.com" },
   { id: "sys-youtube", name: "YouTube", icon: "▶️", url: "https://youtube.com" },
   { id: "sys-spotify", name: "Music", icon: "🎵", url: "https://open.spotify.com" },
   { id: "sys-wiki", name: "Wikipedia", icon: "📚", url: "https://wikipedia.org" },
@@ -31,6 +34,7 @@ export const SYSTEM_APPS: SystemApp[] = [
   { id: "sys-mail", name: "Mail", icon: "📧", url: "https://mail.google.com" },
   { id: "sys-maps", name: "Maps", icon: "🗺️", url: "https://maps.google.com" },
   { id: "sys-github", name: "GitHub", icon: "🐙", url: "https://github.com" },
+  { id: "sys-desmos", name: "Desmos", icon: "📊", url: "https://www.desmos.com/scientific" },
 ];
 
 export const GAMES: Game[] = [
@@ -64,6 +68,7 @@ export type PinnedItem = {
   name: string;
   icon: string;
   url?: string;
+  builtin?: BuiltinAppId;
 };
 
 export type CustomApp = {
@@ -71,4 +76,11 @@ export type CustomApp = {
   name: string;
   icon: string;
   url: string;
+};
+
+export const WALLPAPERS: Record<string, string> = {
+  aurora: "linear-gradient(135deg,#0d0d2e 0%,#1a0a3e 35%,#0a1a40 65%,#0d0d2e 100%)",
+  sunset: "linear-gradient(135deg,#2d0a3e 0%,#5a0a3e 35%,#5a200a 100%)",
+  deep: "linear-gradient(135deg,#000814 0%,#001d3d 50%,#003566 100%)",
+  forest: "linear-gradient(135deg,#0a200a 0%,#0a3a1a 50%,#0a2a3a 100%)",
 };
