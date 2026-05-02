@@ -1,15 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
+import mathsLogo from "@/assets/maths.png";
 import { useAuth } from "@/lib/maths-os/auth";
-import { GAMES, ICON_OPTIONS, SYSTEM_APPS, type CustomApp, type Game, type PinnedItem } from "@/lib/maths-os/data";
+import {
+  GAMES,
+  ICON_OPTIONS,
+  SYSTEM_APPS,
+  WALLPAPERS,
+  type BuiltinAppId,
+  type CustomApp,
+  type Game,
+  type PinnedItem,
+} from "@/lib/maths-os/data";
 import { ToastContainer, toast } from "@/lib/maths-os/toast";
 import { setPlaying, usePresenceHeartbeat } from "@/lib/maths-os/presence";
+import { proxify } from "@/lib/maths-os/proxy";
+import { useWindows, newWinId } from "@/lib/maths-os/windows";
+import { WindowFrame } from "./WindowFrame";
 import { MessagesApp } from "./MessagesApp";
 import { FriendsApp } from "./FriendsApp";
-
-type ViewName = "home" | "apps" | "games" | "browser" | "messages" | "friends";
+import { MathsBrowse } from "./MathsBrowse";
+import { CalculatorApp } from "./apps/CalculatorApp";
+import { NotesApp } from "./apps/NotesApp";
+import { SettingsApp } from "./apps/SettingsApp";
+import { Launcher, type LaunchItem } from "./Launcher";
 
 const PINS_KEY = "mos_pinned";
 const CUSTOM_KEY = "mos_custom_apps";
+const WALL_KEY = "mos_wallpaper";
 
 function load<T>(key: string, def: T): T {
   if (typeof window === "undefined") return def;
@@ -27,14 +44,14 @@ function save<T>(key: string, val: T) {
 
 export function MathsOS() {
   const { user, logout } = useAuth();
-  const [view, setView] = useState<ViewName>("home");
+  const { wins, open, focus, close, restore, minimize } = useWindows();
   const [pinned, setPinned] = useState<PinnedItem[]>(() => load(PINS_KEY, []));
   const [customApps, setCustomApps] = useState<CustomApp[]>(() => load(CUSTOM_KEY, []));
-  const [game, setGame] = useState<Game | null>(null);
+  const [wallpaper, setWallpaper] = useState<string>(() => (typeof window === "undefined" ? "aurora" : localStorage.getItem(WALL_KEY) || "aurora"));
   const [addOpen, setAddOpen] = useState(false);
+  const [launcherOpen, setLauncherOpen] = useState(false);
   const [now, setNow] = useState(new Date());
-  const [appSearch, setAppSearch] = useState("");
-  const [gameSearch, setGameSearch] = useState("");
+  const [showAllApps, setShowAllApps] = useState(false);
 
   usePresenceHeartbeat();
 
@@ -43,12 +60,26 @@ export function MathsOS() {
     return () => clearInterval(t);
   }, []);
 
+  useEffect(() => save(PINS_KEY, pinned), [pinned]);
+  useEffect(() => save(CUSTOM_KEY, customApps), [customApps]);
   useEffect(() => {
-    save(PINS_KEY, pinned);
-  }, [pinned]);
+    if (typeof window !== "undefined") localStorage.setItem(WALL_KEY, wallpaper);
+  }, [wallpaper]);
+
+  // Cmd/Ctrl+K opens launcher
   useEffect(() => {
-    save(CUSTOM_KEY, customApps);
-  }, [customApps]);
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setLauncherOpen((o) => !o);
+      } else if (e.key === "Escape") {
+        setLauncherOpen(false);
+        setShowAllApps(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const isPinned = (id: string) => pinned.some((p) => p.id === id);
   const togglePin = (item: PinnedItem) => {
@@ -62,41 +93,102 @@ export function MathsOS() {
     });
   };
 
+  // ============ Window opening helpers ============
+
+  const openBuiltin = (id: BuiltinAppId) => {
+    // Re-focus existing window of the same kind if open
+    const existing = wins.find((w) => w.id.startsWith(`builtin-${id}`));
+    if (existing) {
+      restore(existing.id);
+      focus(existing.id);
+      return;
+    }
+    const winId = `builtin-${id}-${Date.now().toString(36)}`;
+    if (id === "browse") {
+      open({ id: winId, kind: "react", title: "Maths Browse", icon: "🌐", node: <MathsBrowse /> });
+    } else if (id === "messages") {
+      open({ id: winId, kind: "react", title: "Messages", icon: "💬", node: <MessagesApp />, w: 880, h: 600 });
+    } else if (id === "friends") {
+      open({ id: winId, kind: "react", title: "Friends", icon: "👥", node: <FriendsAppWindow onMessage={() => openBuiltin("messages")} />, w: 720, h: 580 });
+    } else if (id === "calculator") {
+      open({ id: winId, kind: "react", title: "Calculator", icon: "🧮", node: <CalculatorApp />, w: 360, h: 520 });
+    } else if (id === "notes") {
+      open({ id: winId, kind: "react", title: "Notes", icon: "📝", node: <NotesApp />, w: 800, h: 560 });
+    } else if (id === "settings") {
+      open({
+        id: winId,
+        kind: "react",
+        title: "Settings",
+        icon: "⚙️",
+        node: <SettingsApp wallpaper={wallpaper} onWallpaper={setWallpaper} onSignOut={logout} />,
+        w: 720,
+        h: 620,
+      });
+    }
+  };
+
+  const openWebUrl = (url: string, title: string, icon: string) => {
+    const id = newWinId("web");
+    open({
+      id,
+      kind: "iframe",
+      title,
+      icon,
+      src: proxify(url, "primary"),
+      rawUrl: url,
+    });
+  };
+
+  const openGame = (g: Game) => {
+    const id = newWinId("game");
+    setPlaying({ name: g.name, url: g.url });
+    open({
+      id,
+      kind: "iframe",
+      title: g.name,
+      icon: g.icon,
+      src: proxify(g.url, "primary"),
+      rawUrl: g.url,
+      w: 1024,
+      h: 640,
+      onClose: () => setPlaying(null),
+    });
+  };
+
   const launchPin = (item: PinnedItem) => {
     if (item.type === "game") {
       const g = GAMES.find((x) => x.id === item.id);
       if (g) openGame(g);
-    } else if (item.type === "app") {
-      const sys = SYSTEM_APPS.find((x) => x.id === item.id);
-      if (sys?.view) setView(sys.view);
-      else if (sys?.url) window.open(sys.url, "_blank", "noopener");
-      else if (item.url) window.open(item.url, "_blank", "noopener");
+    } else if (item.builtin) {
+      openBuiltin(item.builtin);
     } else if (item.url) {
-      window.open(item.url, "_blank", "noopener");
+      openWebUrl(item.url, item.name, item.icon);
     }
   };
 
-  const openGame = (g: Game) => {
-    setGame(g);
-    setPlaying({ name: g.name, url: g.url });
-  };
-  const closeGame = () => {
-    setGame(null);
-    setPlaying(null);
-  };
+  // ============ Launcher items ============
 
-  const filteredSystem = useMemo(
-    () => SYSTEM_APPS.filter((a) => a.name.toLowerCase().includes(appSearch.toLowerCase())),
-    [appSearch],
-  );
-  const filteredCustom = useMemo(
-    () => customApps.filter((a) => a.name.toLowerCase().includes(appSearch.toLowerCase())),
-    [appSearch, customApps],
-  );
-  const filteredGames = useMemo(
-    () => GAMES.filter((g) => g.name.toLowerCase().includes(gameSearch.toLowerCase())),
-    [gameSearch],
-  );
+  const launcherItems: LaunchItem[] = useMemo(() => {
+    const items: LaunchItem[] = [];
+    SYSTEM_APPS.forEach((a) =>
+      items.push({
+        id: a.id,
+        name: a.name,
+        icon: a.icon,
+        kind: a.builtin ? "system" : "app",
+        hint: a.url,
+        run: () => (a.builtin ? openBuiltin(a.builtin) : openWebUrl(a.url!, a.name, a.icon)),
+      }),
+    );
+    customApps.forEach((a) =>
+      items.push({ id: a.id, name: a.name, icon: a.icon, kind: "app", hint: a.url, run: () => openWebUrl(a.url, a.name, a.icon) }),
+    );
+    GAMES.forEach((g) => items.push({ id: g.id, name: g.name, icon: g.icon, kind: "game", run: () => openGame(g) }));
+    return items;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customApps, wallpaper]);
+
+  // ============ Render ============
 
   const time = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
   const seconds = String(now.getSeconds()).padStart(2, "0");
@@ -107,13 +199,13 @@ export function MathsOS() {
 
   return (
     <div className="mos-root">
-      <div className="mos-desktop" />
+      <div className="mos-desktop" style={{ background: WALLPAPERS[wallpaper] || WALLPAPERS.aurora }} />
 
       {/* TOP BAR */}
       <div className="mos-topbar">
         <div className="mos-topbar-left">
-          <span style={{ fontSize: "1.05em" }}>🍎</span>
-          <span>Maths OS</span>
+          <img src={mathsLogo} alt="Maths" style={{ width: 18, height: 18 }} />
+          <span style={{ fontWeight: 800 }}>Maths OS</span>
           <span style={{ opacity: 0.4 }}>·</span>
           <span>{user?.display_name || user?.username}</span>
         </div>
@@ -122,25 +214,23 @@ export function MathsOS() {
           <span className="mos-presence-pill" title="Online">
             <span className="mos-presence-dot" /> Online
           </span>
-          <span style={{ opacity: 0.5, cursor: "pointer" }} onClick={logout} title="Sign out">
-            ⏻
-          </span>
+          <span style={{ opacity: 0.6, cursor: "pointer" }} onClick={() => openBuiltin("settings")} title="Settings">⚙</span>
+          <span style={{ opacity: 0.6, cursor: "pointer" }} onClick={logout} title="Sign out">⏻</span>
           <span className="mos-topbar-time">{time}</span>
         </div>
       </div>
 
-      {/* HOME */}
-      <div className={`mos-view mos-home ${view === "home" ? "active" : ""}`}>
+      {/* HOME / DESKTOP */}
+      <div className="mos-home-bg">
         <div className="mos-greeting">{greet}, {user?.display_name || user?.username}</div>
         <div className="mos-clock">
-          {time}
-          <span className="mos-clock-s">{seconds}</span>
+          {time}<span className="mos-clock-s">{seconds}</span>
         </div>
         <div className="mos-date">{dateStr}</div>
         <div className="mos-pinned-label">Pinned</div>
         <div className="mos-pinned-row">
           {pinned.length === 0 ? (
-            <div className="mos-empty-pins">No pins yet — pin apps & games from the launcher</div>
+            <div className="mos-empty-pins">Press ⌘K (or Ctrl+K) to launch anything</div>
           ) : (
             pinned.map((item) => (
               <div key={item.id} className="mos-chip" onClick={() => launchPin(item)}>
@@ -153,216 +243,173 @@ export function MathsOS() {
                     e.stopPropagation();
                     setPinned((prev) => prev.filter((p) => p.id !== item.id));
                   }}
-                >
-                  ✕
-                </button>
+                >✕</button>
               </div>
             ))
           )}
         </div>
-      </div>
 
-      {/* APPS */}
-      <div className={`mos-view mos-content-view ${view === "apps" ? "active" : ""}`}>
-        <div className="mos-view-header">
-          <span className="mos-view-title">⚡ Apps</span>
-          <input
-            className="mos-search"
-            placeholder="Search apps..."
-            value={appSearch}
-            onChange={(e) => setAppSearch(e.target.value)}
-          />
-        </div>
-        <p className="mos-section-label">System</p>
-        <div className="mos-app-grid">
-          {filteredSystem.map((app) => {
-            const pinnedNow = isPinned(app.id);
-            return (
-              <div
-                key={app.id}
-                className={`mos-app-tile ${pinnedNow ? "pinned" : ""}`}
-                onClick={() => {
-                  if (app.view) setView(app.view);
-                  else if (app.url) window.open(app.url, "_blank", "noopener");
-                }}
-              >
-                <button
-                  className={`mos-pin-btn ${pinnedNow ? "is-pinned" : ""}`}
-                  title={pinnedNow ? "Unpin" : "Pin"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePin({ id: app.id, type: "app", name: app.name, icon: app.icon, url: app.url });
-                  }}
-                >
-                  {pinnedNow ? "📌" : "📍"}
-                </button>
-                <span className="mos-app-icon">{app.icon}</span>
-                <span className="mos-app-name">{app.name}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        <p className="mos-section-label">Your Apps</p>
-        <div className="mos-app-grid">
-          {filteredCustom.length === 0 ? (
-            <div className="mos-empty">
-              <span className="mos-empty-icon">📦</span>
-              <span>Add your own apps below</span>
-            </div>
-          ) : (
-            filteredCustom.map((app) => {
-              const pinnedNow = isPinned(app.id);
-              return (
-                <div
-                  key={app.id}
-                  className={`mos-app-tile ${pinnedNow ? "pinned" : ""}`}
-                  onClick={() => window.open(app.url, "_blank", "noopener")}
-                >
-                  <button
-                    className={`mos-pin-btn ${pinnedNow ? "is-pinned" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      togglePin({ id: app.id, type: "custom", name: app.name, icon: app.icon, url: app.url });
-                    }}
-                  >
-                    {pinnedNow ? "📌" : "📍"}
-                  </button>
-                  <span className="mos-app-icon">{app.icon}</span>
-                  <span className="mos-app-name">{app.name}</span>
-                </div>
-              );
-            })
-          )}
-        </div>
-        <button
-          className="mos-btn secondary"
-          style={{ width: "auto", padding: "10px 22px", borderRadius: 50, display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}
-          onClick={() => setAddOpen(true)}
-        >
-          ➕ Add Custom App
+        <button className="mos-cmd-hint" onClick={() => setLauncherOpen(true)}>
+          <img src={mathsLogo} alt="" style={{ width: 16, height: 16 }} />
+          <span>Open launcher</span>
+          <span className="mos-launcher-kbd">⌘K</span>
         </button>
       </div>
 
-      {/* GAMES */}
-      <div className={`mos-view mos-content-view ${view === "games" ? "active" : ""}`}>
-        <div className="mos-view-header">
-          <span className="mos-view-title">🎮 Games</span>
-          <input
-            className="mos-search"
-            placeholder="Search games..."
-            value={gameSearch}
-            onChange={(e) => setGameSearch(e.target.value)}
-          />
-        </div>
-        <div className="mos-game-grid">
-          {filteredGames.map((g) => {
-            const pinnedNow = isPinned(g.id);
-            return (
-              <div key={g.id} className="mos-game-card" onClick={() => openGame(g)}>
-                <div
-                  className="mos-game-thumb"
-                  style={{ background: `linear-gradient(135deg, ${g.grad[0]}, ${g.grad[1]})` }}
-                >
-                  {g.icon}
-                </div>
-                <div className="mos-game-name">{g.name}</div>
-                <button
-                  className={`mos-game-pin ${pinnedNow ? "is-pinned" : ""}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePin({ id: g.id, type: "game", name: g.name, icon: g.icon, url: g.url });
-                  }}
-                >
-                  {pinnedNow ? "📌" : "📍"}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* WINDOWS */}
+      {wins.map((w) => (
+        <WindowFrame key={w.id} win={w}>
+          {w.kind === "react" ? w.node : null}
+        </WindowFrame>
+      ))}
 
-      {/* BROWSER */}
-      <div className={`mos-view mos-content-view ${view === "browser" ? "active" : ""}`} style={{ padding: 0 }}>
-        <div style={{ paddingTop: "var(--mos-topbar-h)", flex: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: "30px 32px 20px", textAlign: "center" }}>
-            <div style={{ fontSize: "3em" }}>🌐</div>
-            <h2 style={{ fontSize: "1.4em", margin: "10px 0" }}>Maths OS Browser</h2>
-            <p style={{ color: "var(--mos-text-dim)", maxWidth: 520, margin: "0 auto 20px" }}>
-              Most sites block embedding via X-Frame-Options. Use the quick links below or open in a new tab.
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
-              {["https://example.com", "https://en.wikipedia.org", "https://news.ycombinator.com", "https://duckduckgo.com"].map(
-                (u) => (
-                  <button key={u} className="mos-btn secondary" style={{ flex: "0 0 auto", padding: "8px 18px", borderRadius: 50 }} onClick={() => window.open(u, "_blank", "noopener")}>
-                    {new URL(u).hostname}
-                  </button>
-                ),
-              )}
+      {/* SHOW ALL APPS overlay */}
+      {showAllApps && (
+        <div className="mos-allapps" onClick={() => setShowAllApps(false)}>
+          <div className="mos-allapps-grid" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ width: "100%", marginBottom: 6 }}>All apps & games</h2>
+            <p className="mos-section-label">System</p>
+            <div className="mos-app-grid" style={{ width: "100%" }}>
+              {SYSTEM_APPS.map((app) => {
+                const pinnedNow = isPinned(app.id);
+                return (
+                  <div
+                    key={app.id}
+                    className={`mos-app-tile ${pinnedNow ? "pinned" : ""}`}
+                    onClick={() => {
+                      if (app.builtin) openBuiltin(app.builtin);
+                      else if (app.url) openWebUrl(app.url, app.name, app.icon);
+                      setShowAllApps(false);
+                    }}
+                  >
+                    <button
+                      className={`mos-pin-btn ${pinnedNow ? "is-pinned" : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePin({ id: app.id, type: "app", name: app.name, icon: app.icon, url: app.url, builtin: app.builtin });
+                      }}
+                    >{pinnedNow ? "📌" : "📍"}</button>
+                    <span className="mos-app-icon">{app.icon}</span>
+                    <span className="mos-app-name">{app.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {customApps.length > 0 && (
+              <>
+                <p className="mos-section-label">Your apps</p>
+                <div className="mos-app-grid" style={{ width: "100%" }}>
+                  {customApps.map((app) => {
+                    const pinnedNow = isPinned(app.id);
+                    return (
+                      <div
+                        key={app.id}
+                        className={`mos-app-tile ${pinnedNow ? "pinned" : ""}`}
+                        onClick={() => {
+                          openWebUrl(app.url, app.name, app.icon);
+                          setShowAllApps(false);
+                        }}
+                      >
+                        <button
+                          className={`mos-pin-btn ${pinnedNow ? "is-pinned" : ""}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePin({ id: app.id, type: "custom", name: app.name, icon: app.icon, url: app.url });
+                          }}
+                        >{pinnedNow ? "📌" : "📍"}</button>
+                        <span className="mos-app-icon">{app.icon}</span>
+                        <span className="mos-app-name">{app.name}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            <button
+              className="mos-btn secondary"
+              style={{ width: "auto", padding: "10px 22px", borderRadius: 50, marginTop: 10 }}
+              onClick={() => { setAddOpen(true); setShowAllApps(false); }}
+            >➕ Add Custom App</button>
+
+            <p className="mos-section-label">Games</p>
+            <div className="mos-game-grid" style={{ width: "100%" }}>
+              {GAMES.map((g) => {
+                const pinnedNow = isPinned(g.id);
+                return (
+                  <div key={g.id} className="mos-game-card" onClick={() => { openGame(g); setShowAllApps(false); }}>
+                    <div className="mos-game-thumb" style={{ background: `linear-gradient(135deg, ${g.grad[0]}, ${g.grad[1]})` }}>
+                      {g.icon}
+                    </div>
+                    <div className="mos-game-name">{g.name}</div>
+                    <button
+                      className={`mos-game-pin ${pinnedNow ? "is-pinned" : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePin({ id: g.id, type: "game", name: g.name, icon: g.icon, url: g.url });
+                      }}
+                    >{pinnedNow ? "📌" : "📍"}</button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
-      </div>
-
-      {/* MESSAGES */}
-      <div className={`mos-view mos-content-view ${view === "messages" ? "active" : ""}`}>
-        <div className="mos-view-header">
-          <span className="mos-view-title">💬 Messages</span>
-        </div>
-        <div style={{ flex: 1, width: "100%", height: "calc(100vh - var(--mos-topbar-h) - var(--mos-dock-h) - 100px)" }}>
-          <MessagesApp />
-        </div>
-      </div>
-
-      {/* FRIENDS */}
-      <div className={`mos-view mos-content-view ${view === "friends" ? "active" : ""}`}>
-        <div className="mos-view-header">
-          <span className="mos-view-title">👥 Friends</span>
-        </div>
-        <FriendsApp onMessage={() => setView("messages")} />
-      </div>
+      )}
 
       {/* DOCK */}
       <div className="mos-dock">
-        <DockBtn icon="🏠" label="Home" tip="Home" active={view === "home"} onClick={() => setView("home")} />
-        <DockBtn icon="⚡" label="Apps" tip="Apps" active={view === "apps"} onClick={() => setView("apps")} />
-        <DockBtn icon="🎮" label="Games" tip="Games" active={view === "games"} onClick={() => setView("games")} />
-        <DockBtn icon="💬" label="Chat" tip="Messages" active={view === "messages"} onClick={() => setView("messages")} />
-        <DockBtn icon="👥" label="Friends" tip="Friends" active={view === "friends"} onClick={() => setView("friends")} />
-        <DockBtn icon="🌐" label="Web" tip="Browser" active={view === "browser"} onClick={() => setView("browser")} />
+        <button className="mos-dock-btn" onClick={() => setLauncherOpen(true)} title="Launcher">
+          <img src={mathsLogo} alt="" style={{ width: 28, height: 28 }} />
+          <span className="mos-dock-label">Maths</span>
+        </button>
+        <DockBtn icon="🌐" label="Browse" onClick={() => openBuiltin("browse")} />
+        <DockBtn icon="💬" label="Chat" onClick={() => openBuiltin("messages")} />
+        <DockBtn icon="👥" label="Friends" onClick={() => openBuiltin("friends")} />
+        <DockBtn icon="🎮" label="Games" onClick={() => setShowAllApps(true)} />
+        <DockBtn icon="⚙️" label="Settings" onClick={() => openBuiltin("settings")} />
         <div className="mos-dock-sep" />
         <div className="mos-dock-pinned">
-          {pinned.slice(0, 8).map((item) => (
-            <button key={item.id} className="mos-dock-btn" style={{ width: 44, height: 44 }} onClick={() => launchPin(item)}>
-              <span className="mos-dock-icon" style={{ fontSize: "1.3em" }}>{item.icon}</span>
+          {pinned.slice(0, 6).map((item) => (
+            <button key={item.id} className="mos-dock-btn small" onClick={() => launchPin(item)}>
+              <span className="mos-dock-icon">{item.icon}</span>
               <span className="mos-tooltip">{item.name}</span>
             </button>
           ))}
         </div>
+        {wins.length > 0 && <div className="mos-dock-sep" />}
+        {/* Taskbar of open windows */}
+        <div className="mos-taskbar">
+          {wins.map((w) => (
+            <button
+              key={w.id}
+              className={`mos-task ${w.minimized ? "min" : "open"}`}
+              onClick={() => (w.minimized ? restore(w.id) : focus(w.id))}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                close(w.id);
+              }}
+              title={`${w.title} (right-click to close)`}
+            >
+              <span style={{ fontSize: "1.2em" }}>{w.icon}</span>
+              <span className="mos-task-label">{w.title}</span>
+              <span
+                className="mos-task-x"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  close(w.id);
+                }}
+              >✕</span>
+            </button>
+          ))}
+        </div>
         <div className="mos-dock-sep" />
-        <DockBtn icon="➕" label="Add" tip="Add App" onClick={() => setAddOpen(true)} />
+        <DockBtn icon="➕" label="Apps" onClick={() => setShowAllApps(true)} />
       </div>
 
-      {/* GAME LAUNCHER */}
-      {game && (
-        <div className="mos-launcher">
-          <div className="mos-launcher-bar">
-            <div className="mos-mac-lights">
-              <button className="mos-mac-light close" onClick={closeGame} title="Close" />
-              <button className="mos-mac-light min" onClick={closeGame} title="Minimize" />
-              <button className="mos-mac-light max" onClick={() => document.documentElement.requestFullscreen?.()} title="Fullscreen" />
-            </div>
-            <span className="mos-launcher-title">{game.name}</span>
-          </div>
-          <iframe
-            className="mos-launcher-iframe"
-            src={game.url}
-            title={game.name}
-            allow="fullscreen; autoplay; gamepad"
-            allowFullScreen
-          />
-        </div>
-      )}
+      {/* LAUNCHER */}
+      <Launcher open={launcherOpen} items={launcherItems} onClose={() => setLauncherOpen(false)} />
 
       {/* ADD APP MODAL */}
       {addOpen && (
@@ -381,14 +428,19 @@ export function MathsOS() {
   );
 }
 
-function DockBtn({ icon, label, tip, active, onClick }: { icon: string; label: string; tip: string; active?: boolean; onClick: () => void }) {
+function DockBtn({ icon, label, onClick }: { icon: string; label: string; onClick: () => void }) {
   return (
-    <button className={`mos-dock-btn ${active ? "active" : ""}`} onClick={onClick}>
+    <button className="mos-dock-btn" onClick={onClick}>
       <span className="mos-dock-icon">{icon}</span>
       <span className="mos-dock-label">{label}</span>
-      <span className="mos-tooltip">{tip}</span>
+      <span className="mos-tooltip">{label}</span>
     </button>
   );
+}
+
+function FriendsAppWindow({ onMessage }: { onMessage: () => void }) {
+  // FriendsApp expects an id-based handler; we ignore the id and just pop open the messages window.
+  return <FriendsApp onMessage={() => onMessage()} />;
 }
 
 function AddAppModal({ onClose, onSave }: { onClose: () => void; onSave: (app: CustomApp) => void }) {
@@ -418,9 +470,7 @@ function AddAppModal({ onClose, onSave }: { onClose: () => void; onSave: (app: C
         </div>
         <div className="mos-icon-picker">
           {ICON_OPTIONS.map((i) => (
-            <button key={i} className={`mos-icon-opt ${icon === i ? "selected" : ""}`} onClick={() => setIcon(i)}>
-              {i}
-            </button>
+            <button key={i} className={`mos-icon-opt ${icon === i ? "selected" : ""}`} onClick={() => setIcon(i)}>{i}</button>
           ))}
         </div>
         <div className="mos-row">
