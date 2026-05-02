@@ -22,8 +22,10 @@ export type WinState = {
 };
 
 type State = { wins: WinState[]; topZ: number };
+export type OpenWin = Omit<WinState, "z" | "minimized" | "maximized" | "x" | "y" | "w" | "h"> &
+  Partial<Pick<WinState, "x" | "y" | "w" | "h" | "minimized" | "maximized">>;
 type Action =
-  | { type: "open"; win: Omit<WinState, "z" | "minimized" | "maximized" | "x" | "y" | "w" | "h"> & Partial<Pick<WinState, "x" | "y" | "w" | "h" | "minimized" | "maximized">> }
+  | { type: "open"; win: OpenWin }
   | { type: "close"; id: string }
   | { type: "focus"; id: string }
   | { type: "minimize"; id: string }
@@ -34,7 +36,7 @@ type Action =
 
 const Ctx = createContext<{
   wins: WinState[];
-  open: (w: Action extends { type: "open"; win: infer W } ? W : never) => string;
+  open: (w: OpenWin) => string;
   close: (id: string) => void;
   focus: (id: string) => void;
   minimize: (id: string) => void;
@@ -120,7 +122,7 @@ function reducer(state: State, action: Action): State {
 export function WindowsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, { wins: [], topZ: 10 });
 
-  const open = useCallback<NonNullable<ReturnType<typeof useContext<typeof Ctx>>>["open"]>((w) => {
+  const open = useCallback((w: OpenWin) => {
     dispatch({ type: "open", win: w });
     return w.id;
   }, []);
