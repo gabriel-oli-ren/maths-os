@@ -187,15 +187,23 @@ async function handle(request: Request): Promise<Response> {
     return badRequest("Only http/https URLs are allowed");
   }
 
-  // Build outgoing headers
+  const proxyOrigin = `${reqUrl.protocol}//${reqUrl.host}`;
+  const proxyPrefix = `${proxyOrigin}/api/public/proxy?url=`;
+
+  // Forwarded cookies via our own cookie jar header (so we don't pollute browser).
+  const jarCookie = request.headers.get("x-mb-cookie") || "";
+
+  // Build outgoing headers — pretend to be a real browser.
   const outHeaders = new Headers();
   outHeaders.set(
     "User-Agent",
-    "Mozilla/5.0 (Maths Browse Proxy) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+    request.headers.get("User-Agent") ||
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   );
-  outHeaders.set("Accept", request.headers.get("Accept") || "*/*");
+  outHeaders.set("Accept", request.headers.get("Accept") || "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
   outHeaders.set("Accept-Language", request.headers.get("Accept-Language") || "en-US,en;q=0.9");
-  // We deliberately do NOT forward cookies — keeps it stateless / safe.
+  outHeaders.set("Referer", parsed.origin + "/");
+  if (jarCookie) outHeaders.set("Cookie", jarCookie);
 
   let upstream: Response;
   try {
@@ -206,7 +214,7 @@ async function handle(request: Request): Promise<Response> {
         request.method === "GET" || request.method === "HEAD"
           ? undefined
           : await request.arrayBuffer(),
-      redirect: "follow",
+      redirect: "manual",
     });
   } catch (err) {
     return new Response(
@@ -215,14 +223,39 @@ async function handle(request: Request): Promise<Response> {
     );
   }
 
+  // Manual redirect handling — rewrite Location through our proxy.
+  if (upstream.status >= 300 && upstream.status < 400) {
+    const loc = upstream.headers.get("location");
+    if (loc) {
+      try {
+        const abs = new URL(loc, parsed).href;
+        return new Response(null, {
+          status: upstream.status,
+          headers: {
+            Location: proxyPrefix + encodeURIComponent(abs),
+            ...CORS_HEADERS,
+          },
+        });
+      } catch {}
+    }
+  }
+
   // Build response headers — strip framing/CSP/hop-by-hop.
   const respHeaders = new Headers();
   upstream.headers.forEach((value, key) => {
-    if (!HOP_BY_HOP.has(key.toLowerCase())) respHeaders.set(key, value);
+    if (!HOP_BY_HOP.has(key.toLowerCase()) && key.toLowerCase() !== "set-cookie") respHeaders.set(key, value);
   });
+  // Surface set-cookie back to the client via a custom header it can stash.
+  const setCookies: string[] = [];
+  upstream.headers.forEach((v, k) => {
+    if (k.toLowerCase() === "set-cookie") setCookies.push(v);
+  });
+  if (setCookies.length) respHeaders.set("x-mb-set-cookie", setCookies.join("\n"));
   Object.entries(CORS_HEADERS).forEach(([k, v]) => respHeaders.set(k, v));
+  respHeaders.set("Access-Control-Expose-Headers", "x-mb-set-cookie, location");
 
   const ct = (upstream.headers.get("content-type") || "").toLowerCase();
+
   const proxyOrigin = `${reqUrl.protocol}//${reqUrl.host}`;
 
   // Rewrite HTML
