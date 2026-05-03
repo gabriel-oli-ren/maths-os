@@ -228,7 +228,7 @@ export function MessagesApp() {
               {(() => {
                 const out: React.ReactNode[] = [];
                 let lastDay = "";
-                let lastSender: number | null = null;
+                let lastSender: string | number | null = null;
                 messages.forEach((m, i) => {
                   const d = m.created_at ? new Date(m.created_at) : new Date();
                   const day = d.toDateString();
