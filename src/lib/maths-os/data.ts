@@ -4,6 +4,8 @@ export type Game = {
   icon: string;
   url: string;
   grad: [string, string];
+  /** Optional cover image (screenshot/thumbnail). */
+  image?: string;
 };
 
 export type BuiltinAppId = "calculator" | "notes" | "settings" | "messages" | "friends" | "browse";
@@ -16,7 +18,19 @@ export type SystemApp = {
   url?: string;
   /** Built-in React app to launch. */
   builtin?: BuiltinAppId;
+  /** Optional explicit image. If absent and a `url` exists, we fall back to a favicon. */
+  image?: string;
 };
+
+/** High-quality favicon for any URL (Google's S2 service supports up to 256px). */
+export function faviconFor(url: string, size = 128): string {
+  try {
+    const u = new URL(url);
+    return `https://www.google.com/s2/favicons?sz=${size}&domain=${u.hostname}`;
+  } catch {
+    return "";
+  }
+}
 
 export const SYSTEM_APPS: SystemApp[] = [
   { id: "sys-browse", name: "Maths Browse", icon: "🌐", builtin: "browse" },
@@ -35,6 +49,10 @@ export const SYSTEM_APPS: SystemApp[] = [
   { id: "sys-maps", name: "Maps", icon: "🗺️", url: "https://maps.google.com" },
   { id: "sys-github", name: "GitHub", icon: "🐙", url: "https://github.com" },
   { id: "sys-desmos", name: "Desmos", icon: "📊", url: "https://www.desmos.com/scientific" },
+  { id: "sys-discord", name: "Discord", icon: "💬", url: "https://discord.com/app" },
+  { id: "sys-reddit", name: "Reddit", icon: "👽", url: "https://reddit.com" },
+  { id: "sys-twitch", name: "Twitch", icon: "🎮", url: "https://twitch.tv" },
+  { id: "sys-chatgpt", name: "ChatGPT", icon: "🤖", url: "https://chat.openai.com" },
 ];
 
 export const GAMES: Game[] = [
