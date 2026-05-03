@@ -256,8 +256,6 @@ async function handle(request: Request): Promise<Response> {
 
   const ct = (upstream.headers.get("content-type") || "").toLowerCase();
 
-  const proxyOrigin = `${reqUrl.protocol}//${reqUrl.host}`;
-
   // Rewrite HTML
   if (ct.includes("text/html")) {
     const html = await upstream.text();
