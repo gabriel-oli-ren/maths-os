@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Maths OS — Unblocked Games & Apps</title>
+<meta name="description" content="Maths OS — desktop with games, browser, friends and live chat." />
+<link rel="icon" href="maths.png" type="image/png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;600&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{--acc:#4cc2ff;--acc2:#a259ff;--bg:#080810;--mos-glass-bg:rgba(12,12,20,.72);--mos-glass-border:rgba(255,255,255,.10);--mos-glass-hover:rgba(255,255,255,.07);--mos-accent:#4cc2ff;--mos-accent2:#a259ff;--mos-text:rgba(255,255,255,.92);--mos-text-dim:rgba(255,255,255,.45);--mos-text-faint:rgba(255,255,255,.22);--mos-danger:#ff5f5f;--mos-success:#3ddc97;--mos-warn:#ffb347;--mos-dock-h:72px;--mos-topbar-h:38px;--mos-radius:14px;--mos-blur:blur(36px) saturate(180%)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Outfit',system-ui,sans-serif;color:var(--mos-text);background:#080810;user-select:none}
+/* Desktop bg */
+#desktop-bg{position:fixed;inset:0;z-index:0;background:linear-gradient(135deg,#0d0d2e 0%,#1a0a3e 35%,#0a1a40 65%,#0d0d2e 100%)}
+#desktop-bg::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 20% 30%,rgba(76,194,255,.12) 0%,transparent 50%),radial-gradient(circle at 80% 70%,rgba(162,89,255,.10) 0%,transparent 50%)}
+/* Auth */
+#auth-screen{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d0d2e 0%,#1a0a3e 50%,#0a1a40 100%);padding:20px}
+.auth-card{background:rgba(14,14,26,.85);border:1px solid var(--mos-glass-border);border-radius:22px;padding:36px 32px;width:100%;max-width:420px;backdrop-filter:blur(40px);box-shadow:0 40px 100px rgba(0,0,0,.6)}
+.auth-logo{font-size:2.4em;font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,#fff,var(--mos-accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.auth-sub{color:var(--mos-text-dim);font-size:.88em;margin-bottom:24px}
+.auth-tabs{display:flex;gap:6px;background:rgba(255,255,255,.04);padding:4px;border-radius:12px;margin-bottom:18px}
+.auth-tab{flex:1;padding:9px;background:transparent;border:none;color:var(--mos-text-dim);font-weight:700;font-size:.85em;border-radius:8px;cursor:pointer;font-family:inherit}
+.auth-tab.active{background:var(--mos-accent);color:#000}
+.mos-input{width:100%;padding:12px 16px;background:rgba(255,255,255,.06);border:1px solid var(--mos-glass-border);border-radius:10px;color:var(--mos-text);font-family:inherit;font-size:.9em;outline:none;margin-bottom:12px}
+.mos-input:focus{border-color:rgba(76,194,255,.5)}
+.mos-input::placeholder{color:var(--mos-text-faint)}
+.auth-error{font-size:.8em;color:var(--mos-danger);margin-bottom:10px;min-height:1.2em}
+.mos-btn{width:100%;padding:13px;border:none;border-radius:10px;font-family:inherit;font-size:.9em;font-weight:700;cursor:pointer;transition:all .15s}
+.mos-btn.primary{background:var(--mos-accent);color:#000}
+.mos-btn.primary:hover{background:#6dd4ff}
+.mos-btn.secondary{background:rgba(255,255,255,.07);color:var(--mos-text);border:1px solid var(--mos-glass-border);width:auto;padding:10px 18px}
+.mos-btn.secondary:hover{background:rgba(255,255,255,.12)}
+/* Topbar */
+#topbar{position:fixed;top:0;left:0;right:0;height:var(--mos-topbar-h);z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(8,8,20,.55);backdrop-filter:var(--mos-blur);border-bottom:1px solid var(--mos-glass-border);font-size:.78em}
+.tb-left{display:flex;align-items:center;gap:10px;color:var(--mos-text-dim);font-weight:600}
+.tb-center{font-size:.82em;font-weight:700;color:var(--mos-text-dim);letter-spacing:.5px;font-family:'JetBrains Mono',monospace}
+.tb-right{display:flex;align-items:center;gap:14px;font-weight:600}
+.tb-time{font-family:'JetBrains Mono',monospace;color:var(--mos-text);font-weight:600;font-size:.85em}
+.presence-pill{display:flex;align-items:center;gap:6px;padding:3px 10px;border-radius:50px;background:rgba(255,255,255,.07);border:1px solid var(--mos-glass-border);cursor:pointer}
+.presence-dot{width:7px;height:7px;border-radius:50%;background:var(--mos-success);box-shadow:0 0 6px var(--mos-success)}
+.tb-icon{opacity:.6;cursor:pointer;font-style:normal;font-size:1.1em}
+.tb-icon:hover{opacity:1}
+/* Home */
+#home{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:var(--mos-topbar-h);padding-bottom:var(--mos-dock-h);pointer-events:none}
+#home>*{pointer-events:auto}
+.greeting{font-size:1.1em;font-weight:300;color:var(--mos-text-dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
+.clock{font-size:clamp(4em,12vw,9em);font-weight:800;line-height:.9;letter-spacing:-4px;background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.55) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.clock-s{font-size:.3em;font-weight:300;letter-spacing:1px;vertical-align:super;opacity:.55;margin-left:8px}
+.date-str{font-size:1.1em;font-weight:400;color:rgba(255,255,255,.55);letter-spacing:2px;margin-top:14px}
+.pinned-label{font-size:.72em;font-weight:700;color:var(--mos-text-faint);letter-spacing:2px;text-transform:uppercase;margin-top:36px;margin-bottom:12px}
+.pinned-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;max-width:680px}
+.chip{display:flex;align-items:center;gap:9px;padding:8px 16px 8px 10px;background:rgba(255,255,255,.07);border:1px solid var(--mos-glass-border);border-radius:50px;cursor:pointer;transition:all .2s;font-size:.85em;font-weight:600;backdrop-filter:blur(20px);position:relative;color:var(--mos-text)}
+.chip:hover{background:rgba(76,194,255,.15);border-color:rgba(76,194,255,.35);transform:translateY(-2px)}
+.chip-x{position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:var(--mos-danger);color:#fff;font-size:.6em;font-weight:800;display:none;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1}
+.chip:hover .chip-x{display:flex}
+.empty-pins{font-size:.82em;color:var(--mos-text-faint);padding:12px 20px;border:1px dashed rgba(255,255,255,.12);border-radius:50px}
+.cmd-hint{margin-top:22px;display:flex;align-items:center;gap:10px;padding:9px 16px;background:rgba(255,255,255,.07);border:1px solid var(--mos-glass-border);border-radius:50px;cursor:pointer;color:var(--mos-text);font-size:.82em;font-weight:600;backdrop-filter:blur(20px);font-family:inherit}
+.cmd-hint:hover{background:rgba(76,194,255,.15);border-color:rgba(76,194,255,.35)}
+.kbd{font-size:.7em;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.08);border:1px solid var(--mos-glass-border);color:var(--mos-text-dim)}
+/* Dock */
+#dock{position:fixed;bottom:0;left:0;right:0;height:var(--mos-dock-h);z-index:1000;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 16px;background:rgba(8,8,20,.65);backdrop-filter:var(--mos-blur);border-top:1px solid var(--mos-glass-border);overflow:hidden}
+.dock-sep{width:1px;height:36px;background:rgba(255,255,255,.12);margin:0 4px;flex-shrink:0}
+.dock-btn{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:52px;height:52px;border-radius:13px;border:none;background:transparent;cursor:pointer;transition:all .18s cubic-bezier(.34,1.5,.64,1);color:var(--mos-text);padding:0;font-family:inherit}
+.dock-btn:hover{background:rgba(255,255,255,.10);transform:translateY(-6px) scale(1.08)}
+.dock-icon{font-size:1.6em;line-height:1}
+.dock-label{font-size:.5em;font-weight:700;color:var(--mos-text-dim);letter-spacing:.3px;text-transform:uppercase}
+.dock-btn:hover .dock-label{color:var(--mos-text)}
+.dock-tip{position:absolute;bottom:64px;left:50%;transform:translateX(-50%) scale(.85);background:rgba(12,12,24,.95);border:1px solid var(--mos-glass-border);border-radius:8px;padding:5px 10px;font-size:.72em;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;transition:all .15s}
+.dock-btn:hover .dock-tip{opacity:1;transform:translateX(-50%) scale(1)}
+.dock-small{width:40px;height:40px}
+.taskbar{display:flex;align-items:center;gap:5px;overflow-x:auto;max-width:35%}
+.taskbar::-webkit-scrollbar{height:0}
+.task{display:flex;align-items:center;gap:5px;padding:5px 9px;background:rgba(255,255,255,.06);border:1px solid var(--mos-glass-border);border-radius:9px;cursor:pointer;color:var(--mos-text);max-width:160px;flex-shrink:0;transition:all .15s;font-family:inherit;font-size:1em}
+.task.is-open{background:rgba(76,194,255,.18);border-color:rgba(76,194,255,.4)}
+.task-label{font-size:.7em;font-weight:700;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task-x{opacity:.5;font-size:.72em;cursor:pointer}
+.task-x:hover{opacity:1;color:var(--mos-danger)}
+/* Windows */
+.mos-win{position:fixed;background:rgba(14,14,26,.92);border:1px solid var(--mos-glass-border);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden;backdrop-filter:blur(30px) saturate(160%);animation:winIn .18s ease}
+@keyframes winIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.win-bar{display:flex;align-items:center;gap:12px;padding:8px 14px;background:linear-gradient(to bottom,rgba(40,40,52,.9),rgba(28,28,38,.9));border-bottom:1px solid rgba(0,0,0,.5);cursor:grab;user-select:none;position:relative;flex-shrink:0}
+.win-bar:active{cursor:grabbing}
+.mac-lights{display:flex;align-items:center;gap:8px}
+.mac-btn{width:13px;height:13px;border-radius:50%;border:.5px solid rgba(0,0,0,.18);cursor:pointer;padding:0;outline:none}
+.mac-btn.close{background:radial-gradient(circle at 35% 30%,#ff8a82 0%,#ff5f57 65%,#e94135 100%)}
+.mac-btn.min{background:radial-gradient(circle at 35% 30%,#ffd285 0%,#ffbd2e 65%,#dea123 100%)}
+.mac-btn.max{background:radial-gradient(circle at 35% 30%,#8ce99a 0%,#28c940 65%,#14ae2a 100%)}
+.win-title{position:absolute;left:50%;transform:translateX(-50%);font-size:.82em;font-weight:700;color:rgba(255,255,255,.78);pointer-events:none;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.win-newtab{margin-left:auto;background:rgba(255,255,255,.08);border:1px solid var(--mos-glass-border);color:var(--mos-text);width:28px;height:22px;border-radius:6px;cursor:pointer;font-size:.85em}
+.win-body{flex:1;min-height:0;display:flex;flex-direction:column;background:#0b0b16}
+.win-iframe{flex:1;width:100%;border:none;background:#fff}
+.win-resize{position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,rgba(255,255,255,.25) 50%)}
+/* All apps overlay */
+#allapps{position:fixed;inset:0;z-index:9700;background:rgba(0,0,10,.6);backdrop-filter:blur(20px);display:none;align-items:flex-start;justify-content:center;padding:calc(var(--mos-topbar-h) + 20px) 28px calc(var(--mos-dock-h) + 20px);overflow-y:auto}
+#allapps.open{display:flex}
+.allapps-box{width:100%;max-width:1100px;display:flex;flex-direction:column;gap:6px}
+.allapps-header{display:flex;align-items:center;gap:14px;width:100%;margin-bottom:4px}
+.allapps-tabs{display:flex;gap:6px;padding:4px;background:rgba(255,255,255,.05);border:1px solid var(--mos-glass-border);border-radius:12px;margin-left:auto}
+.allapps-tab{background:transparent;border:none;color:var(--mos-text-dim);font-weight:700;font-size:.85em;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit}
+.allapps-tab.active{background:var(--mos-accent);color:#000}
+.section-label{font-size:.72em;font-weight:700;color:var(--mos-text-faint);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;width:100%}
+.app-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:13px;width:100%;margin-bottom:28px}
+.app-tile{display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px 10px 12px;background:rgba(255,255,255,.05);border:1px solid var(--mos-glass-border);border-radius:var(--mos-radius);cursor:pointer;transition:all .2s;position:relative;backdrop-filter:blur(10px)}
+.app-tile:hover{background:rgba(255,255,255,.10);border-color:rgba(76,194,255,.3);transform:translateY(-4px) scale(1.02)}
+.app-icon-wrap{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:1.8em;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.app-name{font-size:.74em;font-weight:600;text-align:center;line-height:1.3;color:rgba(255,255,255,.85)}
+.pin-btn{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:6px;border:1px solid var(--mos-glass-border);background:rgba(255,255,255,.08);color:var(--mos-text-dim);font-size:.62em;cursor:pointer;display:none;align-items:center;justify-content:center}
+.app-tile:hover .pin-btn,.pin-btn.pinned{display:flex}
+.pin-btn.pinned{background:rgba(76,194,255,.2);color:var(--mos-accent);border-color:rgba(76,194,255,.4)}
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;width:100%}
+.game-card{position:relative;border-radius:var(--mos-radius);overflow:hidden;cursor:pointer;transition:all .22s;border:1px solid var(--mos-glass-border);aspect-ratio:4/3}
+.game-card:hover{transform:translateY(-5px) scale(1.02);border-color:rgba(76,194,255,.35);box-shadow:0 16px 40px rgba(0,0,0,.5)}
+.game-thumb{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3em}
+.game-name{position:absolute;bottom:0;left:0;right:0;padding:9px 11px;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 100%);font-size:.78em;font-weight:700}
+.game-pin{position:absolute;top:7px;right:7px;width:27px;height:27px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.5);backdrop-filter:blur(8px);color:var(--mos-text);font-size:.68em;cursor:pointer;display:none;align-items:center;justify-content:center}
+.game-card:hover .game-pin,.game-pin.pinned{display:flex}
+.game-pin.pinned{background:rgba(76,194,255,.3);color:var(--mos-accent)}
+/* Launcher */
+#launcher{position:fixed;inset:0;z-index:9800;background:rgba(0,0,10,.55);backdrop-filter:blur(8px);display:none;align-items:flex-start;justify-content:center;padding-top:14vh}
+#launcher.open{display:flex}
+.launcher-box{width:min(640px,90vw);background:rgba(20,20,34,.96);border:1px solid var(--mos-glass-border);border-radius:18px;box-shadow:0 30px 90px rgba(0,0,0,.6);overflow:hidden;animation:winIn .16s ease}
+.launcher-search{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--mos-glass-border)}
+.launcher-search input{flex:1;background:transparent;border:none;outline:none;color:var(--mos-text);font-family:inherit;font-size:1.05em}
+.launcher-results{max-height:50vh;overflow-y:auto}
+.l-row{display:flex;align-items:center;gap:12px;padding:10px 18px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04)}
+.l-row.active,.l-row:hover{background:rgba(76,194,255,.15)}
+.l-kind{font-size:.63em;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--mos-text-faint)}
+.l-none{padding:28px;text-align:center;color:var(--mos-text-faint);font-size:.85em}
+/* Friends */
+.friends-wrap{padding:20px;overflow-y:auto;height:100%}
+.friends-code-box{padding:16px;background:rgba(255,255,255,.05);border:1px solid var(--mos-glass-border);border-radius:14px;margin-bottom:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.code-display{font-family:'JetBrains Mono',monospace;font-size:1.6em;font-weight:800;letter-spacing:3px}
+.friend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px;width:100%}
+.friend-card{padding:15px;background:rgba(255,255,255,.05);border:1px solid var(--mos-glass-border);border-radius:var(--mos-radius);display:flex;flex-direction:column;gap:9px}
+.friend-head{display:flex;align-items:center;gap:10px}
+.mos-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--mos-accent),var(--mos-accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#000;font-size:.95em;flex-shrink:0;position:relative}
+.av-dot{position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;border-radius:50%;border:2px solid #0a0a18;background:var(--mos-text-faint)}
+.av-dot.online{background:var(--mos-success)}
+.av-dot.away{background:var(--mos-warn)}
+.f-name{font-weight:700;font-size:.92em}
+.f-handle{font-size:.7em;color:var(--mos-text-dim)}
+.f-actions{display:flex;gap:5px}
+.f-actions button{flex:1;padding:6px 9px;background:rgba(255,255,255,.06);border:1px solid var(--mos-glass-border);border-radius:8px;color:var(--mos-text);font-size:.73em;font-weight:600;cursor:pointer;font-family:inherit}
+.f-actions button:hover{background:rgba(76,194,255,.15);border-color:rgba(76,194,255,.35)}
+.f-actions button.danger:hover{background:rgba(255,95,95,.15);border-color:rgba(255,95,95,.4)}
+/* Messages */
+.msg-wrap{display:flex;width:100%;height:100%}
+.msg-sidebar{width:260px;flex-shrink:0;border-right:1px solid var(--mos-glass-border);display:flex;flex-direction:column;background:rgba(0,0,0,.25)}
+.msg-sidebar-hdr{padding:16px 16px 8px;font-weight:800}
+.msg-list{flex:1;overflow-y:auto}
+.msg-item{display:flex;align-items:center;gap:9px;padding:11px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s}
+.msg-item:hover{background:rgba(255,255,255,.04)}
+.msg-item.active{background:rgba(76,194,255,.10);border-left:3px solid var(--mos-accent);padding-left:13px}
+.msg-meta{flex:1;min-width:0}
+.msg-iname{font-weight:700;font-size:.87em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-isub{font-size:.7em;color:var(--mos-text-dim)}
+.msg-main{flex:1;display:flex;flex-direction:column;min-width:0}
+.msg-hdr{padding:13px 18px;border-bottom:1px solid var(--mos-glass-border);display:flex;align-items:center;gap:11px}
+.msg-thread{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:7px}
+.bubble{max-width:65%;padding:9px 13px;border-radius:16px;font-size:.87em;line-height:1.4;word-wrap:break-word}
+.bubble.mine{align-self:flex-end;background:linear-gradient(135deg,var(--mos-accent),#2da9ff);color:#000;border-bottom-right-radius:5px}
+.bubble.theirs{align-self:flex-start;background:rgba(255,255,255,.08);border-bottom-left-radius:5px}
+.bubble-meta{font-size:.63em;opacity:.55;margin-top:3px}
+.msg-composer{padding:11px 14px;border-top:1px solid var(--mos-glass-border);display:flex;gap:9px;align-items:center;background:rgba(0,0,0,.2)}
+.msg-composer input{flex:1;padding:10px 15px;background:rgba(255,255,255,.06);border:1px solid var(--mos-glass-border);border-radius:50px;color:var(--mos-text);font-family:inherit;font-size:.88em;outline:none}
+.msg-composer input:focus{border-color:rgba(76,194,255,.4)}
+.msg-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mos-text-faint);gap:10px}
+.chat-emojibar{display:flex;gap:3px;padding:3px 10px;border-top:1px solid var(--mos-glass-border);background:rgba(0,0,0,.15);flex-wrap:wrap}
+.chat-emoji{background:transparent;border:none;cursor:pointer;font-size:1.1em;padding:4px 5px;border-radius:7px}
+.chat-emoji:hover{background:rgba(255,255,255,.08)}
+.chat-day{align-self:center;padding:3px 11px;margin:6px 0;background:rgba(255,255,255,.06);border-radius:50px;font-size:.68em;color:var(--mos-text-dim);font-weight:700}
+/* Calculator */
+.calc-wrap{display:flex;flex-direction:column;padding:13px;gap:7px;height:100%;background:#0b0b16}
+.calc-disp{background:rgba(255,255,255,.04);border:1px solid var(--mos-glass-border);border-radius:12px;padding:13px 15px;text-align:right;display:flex;flex-direction:column;gap:4px;min-height:85px;justify-content:flex-end}
+.calc-expr{font-size:.84em;color:var(--mos-text-dim);font-family:'JetBrains Mono',monospace;word-break:break-all}
+.calc-result{font-size:2.1em;font-weight:800;font-family:'JetBrains Mono',monospace}
+.calc-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;flex:1}
+.calc-key{background:rgba(255,255,255,.06);border:1px solid var(--mos-glass-border);border-radius:11px;color:var(--mos-text);font-family:inherit;font-size:1.15em;font-weight:700;cursor:pointer;transition:all .1s}
+.calc-key:hover{background:rgba(255,255,255,.12)}
+.calc-key:active{transform:scale(.96)}
+.calc-key.op{background:rgba(76,194,255,.18);border-color:rgba(76,194,255,.4);color:var(--mos-accent)}
+.calc-key.util{background:rgba(255,179,71,.12);border-color:rgba(255,179,71,.3);color:var(--mos-warn);font-size:.93em}
+/* Notes */
+.notes-wrap{display:flex;height:100%;background:#0b0b16}
+.notes-sidebar{width:230px;flex-shrink:0;border-right:1px solid var(--mos-glass-border);display:flex;flex-direction:column;background:rgba(0,0,0,.25)}
+.notes-list{flex:1;overflow-y:auto}
+.note-item{padding:9px 13px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer}
+.note-item:hover{background:rgba(255,255,255,.04)}
+.note-item.active{background:rgba(76,194,255,.12)}
+.note-item-title{font-weight:700;font-size:.87em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-item-sub{font-size:.68em;color:var(--mos-text-dim);margin-top:2px}
+.notes-main{flex:1;display:flex;flex-direction:column;min-width:0}
+.notes-toolbar{display:flex;gap:9px;padding:9px 13px;border-bottom:1px solid var(--mos-glass-border)}
+.notes-title-input{flex:1;background:transparent;border:none;outline:none;color:var(--mos-text);font-family:inherit;font-size:1.1em;font-weight:700}
+.notes-body{flex:1;background:transparent;border:none;outline:none;color:var(--mos-text);font-family:inherit;font-size:.93em;padding:15px 17px;resize:none;line-height:1.5}
+/* Settings */
+.settings-wrap{padding:22px 26px;overflow-y:auto;height:100%}
+.settings-section{margin-bottom:26px;padding-bottom:20px;border-bottom:1px solid var(--mos-glass-border)}
+.settings-section h3{font-size:.98em;font-weight:800;margin-bottom:11px}
+.settings-label{display:block;font-size:.7em;font-weight:700;color:var(--mos-text-faint);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
+.wall-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:11px}
+.wall-tile{height:78px;border-radius:12px;border:2px solid var(--mos-glass-border);cursor:pointer;display:flex;align-items:flex-end;padding:7px 9px;color:#fff;font-size:.77em;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.wall-tile.active{border-color:var(--mos-accent);box-shadow:0 0 0 3px rgba(76,194,255,.25)}
+/* Toasts */
+#toasts{position:fixed;bottom:calc(var(--mos-dock-h) + 12px);right:16px;z-index:9999;display:flex;flex-direction:column;gap:7px;align-items:flex-end}
+.toast{background:rgba(14,14,26,.96);border:1px solid var(--mos-glass-border);border-radius:11px;padding:11px 17px;font-size:.8em;font-weight:600;backdrop-filter:blur(20px);min-width:180px;max-width:280px;animation:toastIn .3s ease}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast.success{border-color:rgba(61,220,151,.3)}
+.toast.warn{border-color:rgba(255,179,71,.3)}
+/* Add app modal */
+.modal-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,10,.7);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:rgba(14,14,26,.96);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:28px 30px;width:100%;max-width:480px;box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.modal-title{font-size:1.15em;font-weight:800;margin-bottom:5px}
+.modal-sub{font-size:.8em;color:var(--mos-text-dim);margin-bottom:20px;line-height:1.5}
+.icon-picker{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px}
+.icon-opt{width:38px;height:38px;border-radius:9px;border:1.5px solid var(--mos-glass-border);background:rgba(255,255,255,.05);font-size:1.25em;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.icon-opt.selected{border-color:var(--mos-accent);background:rgba(76,194,255,.12)}
+.row-btns{display:flex;gap:9px}
+/* Maths Browse inner */
+.browse-wrap{display:flex;flex-direction:column;height:100%;background:#0b0b16}
+.browse-bar{display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(20,20,34,.95);border-bottom:1px solid var(--mos-glass-border)}
+.browse-nav{width:29px;height:29px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--mos-glass-border);color:var(--mos-text);cursor:pointer;font-size:1em}
+.browse-nav:disabled{opacity:.3;cursor:not-allowed}
+.browse-nav:hover:not(:disabled){background:rgba(76,194,255,.2)}
+.browse-url{flex:1;padding:7px 13px;border-radius:50px;background:rgba(255,255,255,.06);border:1px solid var(--mos-glass-border);color:var(--mos-text);font-family:inherit;font-size:.84em;outline:none}
+.browse-url:focus{border-color:rgba(76,194,255,.4)}
+.browse-frame{flex:1;width:100%;border:none;background:#fff}
+/* Misc */
+.mos-empty{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:50px 20px;color:var(--mos-text-faint);text-align:center;font-size:.88em}
+.inline-row{display:flex;gap:9px;align-items:center}
+</style>
+</head>
+<body>
+
+<div id="desktop-bg"></div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">Maths OS</div>
+    <div class="auth-sub">Sign in to chat with friends and track sessions.</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="setMode('login')">Sign in</button>
+      <button class="auth-tab" onclick="setMode('signup')">Create account</button>
+    </div>
+    <input class="mos-input" id="auth-username" placeholder="Username" autocomplete="username" />
+    <input class="mos-input" id="auth-displayname" placeholder="Display name" style="display:none" />
+    <input class="mos-input" id="auth-password" type="password" placeholder="Password" autocomplete="current-password" />
+    <div class="auth-error" id="auth-error"></div>
+    <button class="mos-btn primary" id="auth-submit" onclick="doAuth()">Sign in</button>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar" style="display:none">
+  <div class="tb-left">
+    <img src="maths.png" alt="" style="width:18px;height:18px;border-radius:4px" onerror="this.replaceWith(document.createTextNode('🖥️'))">
+    <span style="font-weight:800">Maths OS</span>
+    <span style="opacity:.4">·</span>
+    <span id="tb-username"></span>
+  </div>
+  <div class="tb-center" id="tb-date"></div>
+  <div class="tb-right">
+    <span class="presence-pill"><span class="presence-dot"></span>Online</span>
+    <i class="tb-icon" onclick="openBuiltin('settings')" title="Settings">⚙</i>
+    <i class="tb-icon" onclick="doLogout()" title="Sign out">⏻</i>
+    <span class="tb-time" id="tb-time"></span>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" style="display:none">
+  <div class="greeting" id="greeting">Good morning</div>
+  <div class="clock" id="clock-time">00:00<span class="clock-s" id="clock-s">00</span></div>
+  <div class="date-str" id="home-date"></div>
+  <div class="pinned-label">Pinned</div>
+  <div class="pinned-row" id="pinned-row">
+    <div class="empty-pins">Press ⌘K or Ctrl+K to launch anything</div>
+  </div>
+  <button class="cmd-hint" onclick="openLauncher()">
+    <span>🔍</span><span>Open launcher</span><span class="kbd">⌘K</span>
+  </button>
+</div>
+
+<!-- WINDOWS container (inserted dynamically) -->
+
+<!-- ALL APPS OVERLAY -->
+<div id="allapps" onclick="if(event.target===this)closeAllapps()">
+  <div class="allapps-box">
+    <div class="allapps-header">
+      <h2 style="margin:0" id="allapps-title">Apps</h2>
+      <div class="allapps-tabs">
+        <button class="allapps-tab active" onclick="setAppsTab('apps')">🧩 Apps</button>
+        <button class="allapps-tab" onclick="setAppsTab('games')">🎮 Games</button>
+      </div>
+      <button class="mos-btn secondary" onclick="closeAllapps()">Close</button>
+    </div>
+    <div id="allapps-content"></div>
+  </div>
+</div>
+
+<!-- LAUNCHER -->
+<div id="launcher" onclick="if(event.target===this)closeLauncher()">
+  <div class="launcher-box">
+    <div class="launcher-search">
+      <span>🔍</span>
+      <input id="launcher-input" placeholder="Search apps, games, friends…"
+        oninput="filterLauncher()" onkeydown="launcherKey(event)" />
+      <span class="kbd">esc</span>
+    </div>
+    <div class="launcher-results" id="launcher-results"></div>
+  </div>
+</div>
+
+<!-- ADD APP MODAL -->
+<div class="modal-overlay" id="add-modal" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal-box">
+    <div class="modal-title">➕ Add Custom App</div>
+    <div class="modal-sub">Add a link or web app to your launcher.</div>
+    <input class="mos-input" id="add-name" placeholder="App name (e.g. YouTube)" maxlength="30" />
+    <input class="mos-input" id="add-url" placeholder="URL (e.g. https://youtube.com)" />
+    <div style="font-size:.7em;color:var(--mos-text-faint);margin-bottom:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Icon</div>
+    <div class="icon-picker" id="icon-picker"></div>
+    <div class="row-btns">
+      <button class="mos-btn secondary" onclick="closeAddModal()">Cancel</button>
+      <button class="mos-btn primary" style="flex:1" onclick="saveCustomApp()">Save App</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOCK -->
+<div id="dock" style="display:none">
+  <button class="dock-btn" onclick="openLauncher()" title="Launcher">
+    <span class="dock-icon"><img src="maths.png" style="width:28px;height:28px;border-radius:6px" onerror="this.replaceWith(document.createTextNode('🖥️'))"></span>
+    <span class="dock-label">Maths</span>
+    <span class="dock-tip">Launcher</span>
+  </button>
+  <button class="dock-btn" onclick="openBuiltin('browse')"><span class="dock-icon">🌐</span><span class="dock-label">Browse</span><span class="dock-tip">Maths Browse</span></button>
+  <button class="dock-btn" onclick="openBuiltin('messages')"><span class="dock-icon">💬</span><span class="dock-label">Chat</span><span class="dock-tip">Messages</span></button>
+  <button class="dock-btn" onclick="openBuiltin('friends')"><span class="dock-icon">👥</span><span class="dock-label">Friends</span><span class="dock-tip">Friends</span></button>
+  <button class="dock-btn" onclick="showAllapps('games')"><span class="dock-icon">🎮</span><span class="dock-label">Games</span><span class="dock-tip">Games</span></button>
+  <button class="dock-btn" onclick="openBuiltin('settings')"><span class="dock-icon">⚙️</span><span class="dock-label">Settings</span><span class="dock-tip">Settings</span></button>
+  <div class="dock-sep"></div>
+  <div id="dock-pinned" style="display:flex;align-items:center;gap:5px;max-width:25%;overflow:hidden"></div>
+  <div class="dock-sep" id="taskbar-sep" style="display:none"></div>
+  <div class="taskbar" id="taskbar"></div>
+  <div class="dock-sep"></div>
+  <button class="dock-btn" onclick="showAllapps('apps')"><span class="dock-icon">🧩</span><span class="dock-label">Apps</span><span class="dock-tip">All Apps</span></button>
+</div>
+
+<!-- TOASTS -->
+<div id="toasts"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  SUPABASE
+// ═══════════════════════════════════════════════════════
+const SB_URL = 'https://hsmfjpetvcsgkpkwpdjr.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzbWZqcGV0dmNzZ2twa3dwZGpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NDc0MzEsImV4cCI6MjA3OTMyMzQzMX0.IBiJtUJBPyjNwGowfgnlfrbHpb46C43NmYY3O9rEFqQ';
+const sb = supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:false,autoRefreshToken:false}});
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let currentUser = null;
+let wins = [], topZ = 10;
+let pinned = JSON.parse(localStorage.getItem('mos_pinned')||'[]');
+let customApps = JSON.parse(localStorage.getItem('mos_custom_apps')||'[]');
+let wallpaper = localStorage.getItem('mos_wallpaper')||'aurora';
+let authMode = 'login';
+let selectedIcon = '🌐';
+let allappsTab = 'apps';
+let launcherIdx = 0;
+let launcherItems = [];
+let heartbeatTimer = null;
+
+const WALLPAPERS = {
+  aurora:'linear-gradient(135deg,#0d0d2e 0%,#1a0a3e 35%,#0a1a40 65%,#0d0d2e 100%)',
+  sunset:'linear-gradient(135deg,#2d0a3e 0%,#5a0a3e 35%,#5a200a 100%)',
+  deep:'linear-gradient(135deg,#000814 0%,#001d3d 50%,#003566 100%)',
+  forest:'linear-gradient(135deg,#0a200a 0%,#0a3a1a 50%,#0a2a3a 100%)'
+};
+
+const SYSTEM_APPS = [
+  {id:'sys-browse',name:'Maths Browse',icon:'🌐',builtin:'browse'},
+  {id:'sys-messages',name:'Messages',icon:'💬',builtin:'messages'},
+  {id:'sys-friends',name:'Friends',icon:'👥',builtin:'friends'},
+  {id:'sys-calc',name:'Calculator',icon:'🧮',builtin:'calculator'},
+  {id:'sys-notes',name:'Notes',icon:'📝',builtin:'notes'},
+  {id:'sys-settings',name:'Settings',icon:'⚙️',builtin:'settings'},
+  {id:'sys-search',name:'Search',icon:'🔍',url:'https://duckduckgo.com'},
+  {id:'sys-youtube',name:'YouTube',icon:'▶️',url:'https://youtube.com'},
+  {id:'sys-wiki',name:'Wikipedia',icon:'📚',url:'https://wikipedia.org'},
+  {id:'sys-translate',name:'Translate',icon:'🌍',url:'https://translate.google.com'},
+  {id:'sys-desmos',name:'Desmos',icon:'📊',url:'https://www.desmos.com/scientific'},
+  {id:'sys-chatgpt',name:'ChatGPT',icon:'🤖',url:'https://chat.openai.com'},
+  {id:'sys-github',name:'GitHub',icon:'🐙',url:'https://github.com'},
+  {id:'sys-mail',name:'Mail',icon:'📧',url:'https://mail.google.com'},
+  {id:'sys-spotify',name:'Music',icon:'🎵',url:'https://open.spotify.com'},
+  {id:'sys-reddit',name:'Reddit',icon:'👽',url:'https://reddit.com'},
+  {id:'sys-discord',name:'Discord',icon:'💬',url:'https://discord.com/app'},
+  {id:'sys-twitch',name:'Twitch',icon:'🎮',url:'https://twitch.tv'},
+  {id:'sys-maps',name:'Maps',icon:'🗺️',url:'https://maps.google.com'},
+];
+
+const GAMES = [
+  {id:'drive-mad',name:'Drive Mad',icon:'🏎️',url:'https://games.playtropolis.com/drive-mad-v2/',grad:['#1a0030','#3d0060']},
+  {id:'poly-track',name:'Poly Track',icon:'🏁',url:'https://arcadrome.com/embed/polytrack',grad:['#001a30','#003d60']},
+  {id:'odd-bot',name:'Odd Bot Out',icon:'🤖',url:'https://games.playtropolis.com/odd-bot-out/',grad:['#001a20','#003d40']},
+  {id:'stunt-bike',name:'Stunt Bike',icon:'🏍️',url:'https://games.playtropolis.com/stunt-bike-extreme/',grad:['#1a1000','#3d2800']},
+  {id:'subway',name:'Subway Surfers',icon:'🚇',url:'https://arcadrome.com/embed/subway-surfers',grad:['#001a10','#003d28']},
+  {id:'monkey-mart',name:'Monkey Mart',icon:'🐵',url:'https://games.playtropolis.com/monkey-mart/',grad:['#1a1a00','#3d3d00']},
+  {id:'house-hazards',name:'House of Hazards',icon:'🏠',url:'https://games.playtropolis.com/house-of-hazards/',grad:['#1a0010','#3d0028']},
+  {id:'tiny-fishing',name:'Tiny Fishing',icon:'🎣',url:'https://games.playtropolis.com/tiny-fishing/',grad:['#001030','#002060']},
+  {id:'basketball',name:'Basketball Stars',icon:'🏀',url:'https://games.playtropolis.com/basketball-stars/',grad:['#1a0800','#3d1a00']},
+  {id:'short-life',name:'Short Life',icon:'💀',url:'https://games.playtropolis.com/short-life/',grad:['#0d0d0d','#2d2d2d']},
+  {id:'minecraft',name:'Minecraft',icon:'⛏️',url:'https://x.mess.eu.org/ninja-wasm/',grad:['#0d1a00','#1a3d00']},
+  {id:'geometry-dash',name:'Geometry Dash',icon:'📐',url:'https://arcadrome.com/embed/geometry-dash-lite/',grad:['#1a0000','#3d0000']},
+  {id:'smash-karts',name:'Smash Karts',icon:'🛒',url:'https://geometrykarts.com/',grad:['#001a1a','#003d3d']},
+  {id:'rocket-bot',name:'Rocket Bot Royale',icon:'🚀',url:'https://rocket-bot-royale.gabriel-oli-ren-micro.workers.dev/',grad:['#00001a','#00003d']},
+  {id:'rooftop',name:'Rooftop Snipers',icon:'🎯',url:'https://ezclasswork.com/science/rooftop-snipers-2/',grad:['#1a1000','#3d2800']},
+  {id:'age-of-war',name:'Age of War',icon:'⚔️',url:'https://yohohoio.gabriel-oli-ren-micro.workers.dev/age-of-war.embedgame',grad:['#1a0800','#401500']},
+  {id:'shell-shockers',name:'Shell Shockers',icon:'🥚',url:'https://geometry.pw/',grad:['#1a1a00','#3d3d10']},
+  {id:'recoil',name:'Recoil',icon:'🔫',url:'https://games.playtropolis.com/recoil/',grad:['#0d0020','#1a0040']},
+  {id:'goober-dash',name:'Goober Dash',icon:'👾',url:'https://goober-dash.gabriel-oli-ren-micro.workers.dev/',grad:['#001a1a','#003333']},
+  {id:'car-chase',name:'Car Chase',icon:'🚗',url:'https://idev.games/embed/car-chase-',grad:['#1a0000','#400000']},
+];
+
+const ICON_OPTIONS = ['🌐','🔗','⭐','🎯','📌','🧩','🛠️','💡','🔑','📁','🖥️','📱','🎨','🏆','💼','📊','🔔','🗂️','🌟','⚡','🎮','📺','🎵','📚','🧮','✏️','📷','💬'];
+
+// ═══════════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════════
+function setMode(m) {
+  authMode = m;
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(m==='login'?i===0:i===1)));
+  document.getElementById('auth-displayname').style.display = m==='signup'?'':'none';
+  document.getElementById('auth-submit').textContent = m==='login'?'Sign in':'Create account';
+  document.getElementById('auth-password').autocomplete = m==='login'?'current-password':'new-password';
+}
+
+async function doAuth() {
+  const username = document.getElementById('auth-username').value.trim().toLowerCase();
+  const password = document.getElementById('auth-password').value;
+  const displayName = document.getElementById('auth-displayname').value.trim();
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  if (!username || !password) { errEl.textContent='Fill in all fields'; return; }
+  document.getElementById('auth-submit').textContent = '…';
+
+  try {
+    if (authMode === 'login') {
+      const {data,error} = await sb.from('users')
+        .select('id,username,display_name,friend_code,role,is_admin,created_at,password')
+        .eq('username',username).maybeSingle();
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error('User not found');
+      if (data.password !== password) throw new Error('Wrong password');
+      const {password:_,  ...safe} = data;
+      loginSuccess(safe);
+    } else {
+      if (username.length < 3) throw new Error('Username must be at least 3 characters');
+      if (password.length < 4) throw new Error('Password must be at least 4 characters');
+      const {data:ex} = await sb.from('users').select('id').eq('username',username).maybeSingle();
+      if (ex) throw new Error('Username already taken');
+      const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let fc=''; for(let i=0;i<6;i++) fc+=chars[Math.floor(Math.random()*chars.length)];
+      const {data,error} = await sb.from('users').insert({username,display_name:displayName||username,password,friend_code:fc,role:'user'})
+        .select('id,username,display_name,friend_code,role,is_admin,created_at').single();
+      if (error) throw new Error(error.message);
+      loginSuccess(data);
+    }
+  } catch(e) {
+    document.getElementById('auth-error').textContent = e.message;
+    document.getElementById('auth-submit').textContent = authMode==='login'?'Sign in':'Create account';
+  }
+}
+
+document.getElementById('auth-password').addEventListener('keydown', e=>{ if(e.key==='Enter') doAuth(); });
+document.getElementById('auth-username').addEventListener('keydown', e=>{ if(e.key==='Enter') doAuth(); });
+
+function loginSuccess(user) {
+  currentUser = user;
+  localStorage.setItem('mos_session_user', JSON.stringify(user));
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('topbar').style.display = '';
+  document.getElementById('home').style.display = '';
+  document.getElementById('dock').style.display = '';
+  document.getElementById('tb-username').textContent = user.display_name || user.username;
+  startClock();
+  startHeartbeat();
+  renderPinned();
+  rebuildLauncher();
+  applyWallpaper();
+}
+
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('mos_session_user');
+  if (heartbeatTimer) clearInterval(heartbeatTimer);
+  wins.forEach(w=>{ if(w.el) w.el.remove(); });
+  wins = [];
+  renderTaskbar();
+  document.getElementById('auth-screen').style.display = '';
+  document.getElementById('topbar').style.display = 'none';
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('dock').style.display = 'none';
+}
+
+// Try restore session
+(function() {
+  const raw = localStorage.getItem('mos_session_user');
+  if (raw) { try { loginSuccess(JSON.parse(raw)); } catch(e) { localStorage.removeItem('mos_session_user'); } }
+})();
+
+// ═══════════════════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════════════════
+function startClock() {
+  tick();
+  setInterval(tick, 1000);
+}
+function tick() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock-time').childNodes[0].textContent = t;
+  document.getElementById('clock-s').textContent = s;
+  document.getElementById('tb-time').textContent = t;
+  document.getElementById('tb-date').textContent = now.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  document.getElementById('home-date').textContent = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const h = now.getHours();
+  const name = currentUser ? (currentUser.display_name||currentUser.username) : '';
+  const greet = h<5?'Good night':h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night';
+  document.getElementById('greeting').textContent = `${greet}${name?', '+name:''}`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  PRESENCE HEARTBEAT
+// ═══════════════════════════════════════════════════════
+async function sendHeartbeat(gameName=null, gameUrl=null) {
+  if (!currentUser) return;
+  await sb.from('user_presence').upsert({
+    user_id: currentUser.id, game_name:gameName, game_url:gameUrl,
+    last_active: new Date().toISOString(), updated_at: new Date().toISOString()
+  },{onConflict:'user_id'});
+}
+function startHeartbeat() {
+  sendHeartbeat();
+  heartbeatTimer = setInterval(()=>sendHeartbeat(), 30000);
+}
+
+// ═══════════════════════════════════════════════════════
+//  WALLPAPER
+// ═══════════════════════════════════════════════════════
+function applyWallpaper(w) {
+  if (w) { wallpaper=w; localStorage.setItem('mos_wallpaper',w); }
+  document.getElementById('desktop-bg').style.background = WALLPAPERS[wallpaper]||WALLPAPERS.aurora;
+}
+applyWallpaper();
+
+// ═══════════════════════════════════════════════════════
+//  WINDOWS
+// ═══════════════════════════════════════════════════════
+function newWinId(p='win') { return p+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6); }
+
+function openWin({id, title, icon, kind, src, rawUrl, node, w, h, onClose}) {
+  // re-focus if exists
+  const ex = wins.find(x=>x.id===id);
+  if (ex) { focusWin(id); return; }
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const pw = Math.min(w||960, vw-80), ph = Math.min(h||640, vh-150);
+  const offset = (wins.length%6)*30;
+  const px = Math.max(20, (vw-pw)/2 + offset - 60);
+  const py = Math.max(45, (vh-ph)/2 + offset - 40);
+  const z = ++topZ;
+  const state = {id, title, icon, kind, src, rawUrl, node, w:pw, h:ph, x:px, y:py, z, minimized:false, maximized:false, onClose};
+  wins.push(state);
+  const el = document.createElement('div');
+  el.className = 'mos-win';
+  el.id = 'win-'+id;
+  el.style.cssText = `left:${px}px;top:${py}px;width:${pw}px;height:${ph}px;z-index:${z}`;
+  el.innerHTML = `
+    <div class="win-bar" id="winbar-${id}">
+      <div class="mac-lights">
+        <button class="mac-btn close" onclick="closeWin('${id}')"></button>
+        <button class="mac-btn min" onclick="minimizeWin('${id}')"></button>
+        <button class="mac-btn max" onclick="toggleMax('${id}')"></button>
+      </div>
+      <span class="win-title">${icon} ${title}</span>
+      ${rawUrl?`<button class="win-newtab" onclick="window.open('${rawUrl}','_blank')" title="Open in new tab">↗</button>`:''}
+    </div>
+    <div class="win-body" id="winbody-${id}"></div>
+    <div class="win-resize" id="winresize-${id}"></div>`;
+  document.body.appendChild(el);
+  state.el = el;
+  const body = el.querySelector('.win-body');
+  if (kind==='iframe') {
+    const iframe = document.createElement('iframe');
+    iframe.className='win-iframe';
+    iframe.src=src||rawUrl||'about:blank';
+    iframe.title=title;
+    iframe.allow='fullscreen; autoplay; gamepad; clipboard-read; clipboard-write';
+    iframe.allowFullscreen=true;
+    iframe.sandbox='allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-downloads';
+    body.appendChild(iframe);
+  } else if (kind==='react' && node) {
+    body.appendChild(node);
+  }
+  // Drag
+  makeDraggable(el, el.querySelector('.win-bar'), state);
+  makeResizable(el, el.querySelector('.win-resize'), state);
+  el.addEventListener('mousedown',()=>focusWin(id));
+  renderTaskbar();
+}
+
+function closeWin(id) {
+  const w = wins.find(x=>x.id===id);
+  if (w?.onClose) try{w.onClose();}catch(e){}
+  if (w?.el) w.el.remove();
+  wins = wins.filter(x=>x.id!==id);
+  renderTaskbar();
+}
+function focusWin(id) {
+  const w = wins.find(x=>x.id===id);
+  if (!w) return;
+  w.z = ++topZ; w.minimized=false;
+  if(w.el){ w.el.style.zIndex=w.z; w.el.style.display=''; }
+}
+function minimizeWin(id) {
+  const w = wins.find(x=>x.id===id);
+  if (!w) return;
+  w.minimized=true;
+  if(w.el) w.el.style.display='none';
+  renderTaskbar();
+}
+function restoreWin(id) {
+  const w = wins.find(x=>x.id===id);
+  if (!w) return;
+  w.minimized=false; focusWin(id);
+  if(w.el) w.el.style.display='';
+  renderTaskbar();
+}
+function toggleMax(id) {
+  const w = wins.find(x=>x.id===id);
+  if (!w || !w.el) return;
+  w.maximized = !w.maximized;
+  if (w.maximized) {
+    w._prevStyle = {left:w.el.style.left,top:w.el.style.top,width:w.el.style.width,height:w.el.style.height};
+    w.el.style.cssText = `left:0;top:38px;width:100vw;height:calc(100vh - 38px - 72px);z-index:${w.z};border-radius:0`;
+  } else {
+    if(w._prevStyle){Object.assign(w.el.style,w._prevStyle);w.el.style.borderRadius='';}
+  }
+}
+
+function makeDraggable(el, bar, state) {
+  let drag=null;
+  bar.addEventListener('mousedown',e=>{
+    if(state.maximized) return;
+    drag={ox:e.clientX-el.offsetLeft,oy:e.clientY-el.offsetTop};
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!drag) return;
+    const x=Math.max(0,Math.min(window.innerWidth-60,e.clientX-drag.ox));
+    const y=Math.max(38,Math.min(window.innerHeight-112,e.clientY-drag.oy));
+    el.style.left=x+'px'; el.style.top=y+'px';
+    state.x=x; state.y=y;
+  });
+  document.addEventListener('mouseup',()=>drag=null);
+}
+function makeResizable(el, handle, state) {
+  let rs=null;
+  handle.addEventListener('mousedown',e=>{
+    rs={sw:el.offsetWidth,sh:el.offsetHeight,sx:e.clientX,sy:e.clientY};
+    e.stopPropagation(); e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!rs) return;
+    const w=Math.max(360,rs.sw+(e.clientX-rs.sx));
+    const h=Math.max(240,rs.sh+(e.clientY-rs.sy));
+    el.style.width=w+'px'; el.style.height=h+'px';
+    state.w=w; state.h=h;
+  });
+  document.addEventListener('mouseup',()=>rs=null);
+}
+
+function renderTaskbar() {
+  const tb = document.getElementById('taskbar');
+  const sep = document.getElementById('taskbar-sep');
+  sep.style.display = wins.length?'':'none';
+  tb.innerHTML = wins.map(w=>`
+    <button class="task ${w.minimized?'':'is-open'}" onclick="w_toggle('${w.id}')" oncontextmenu="closeWin('${w.id}');return false" title="${w.title} (right-click to close)">
+      <span>${w.icon}</span>
+      <span class="task-label">${w.title}</span>
+      <span class="task-x" onclick="event.stopPropagation();closeWin('${w.id}')">✕</span>
+    </button>`).join('');
+}
+window.w_toggle = id => { const w=wins.find(x=>x.id===id); if(w?.minimized) restoreWin(id); else focusWin(id); };
+
+// ═══════════════════════════════════════════════════════
+//  BUILT-IN APPS
+// ═══════════════════════════════════════════════════════
+function openBuiltin(id) {
+  const existing = wins.find(w=>w.id.startsWith('builtin-'+id));
+  if (existing) { restoreWin(existing.id); focusWin(existing.id); return; }
+  const winId = `builtin-${id}-${Date.now().toString(36)}`;
+  if (id==='browse') {
+    const div=document.createElement('div'); div.className='browse-wrap';
+    div.innerHTML=`<div class="browse-bar">
+      <button class="browse-nav" id="bb-back-${winId}" onclick="bb_back('${winId}')" disabled>←</button>
+      <button class="browse-nav" id="bb-fwd-${winId}" onclick="bb_fwd('${winId}')" disabled>→</button>
+      <button class="browse-nav" onclick="bb_reload('${winId}')">⟳</button>
+      <input class="browse-url" id="bb-url-${winId}" placeholder="Search or enter address" value="https://duckduckgo.com" onkeydown="if(event.key==='Enter')bb_go('${winId}')">
+      <button class="browse-nav" onclick="bb_go('${winId}')">→</button>
+    </div>
+    <iframe class="browse-frame" id="bb-frame-${winId}" src="https://duckduckgo.com" allow="fullscreen;autoplay;gamepad" allowfullscreen sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-downloads"></iframe>`;
+    window['bb_hist_'+winId]=['https://duckduckgo.com'];
+    window['bb_idx_'+winId]=0;
+    openWin({id:winId,title:'Maths Browse',icon:'🌐',kind:'react',node:div});
+  } else if (id==='messages') {
+    const div=document.createElement('div'); div.style.cssText='width:100%;height:100%';
+    div.appendChild(buildMessagesApp(winId));
+    openWin({id:winId,title:'Messages',icon:'💬',kind:'react',node:div,w:860,h:580});
+  } else if (id==='friends') {
+    const div=document.createElement('div'); div.style.cssText='width:100%;height:100%;overflow-y:auto';
+    div.appendChild(buildFriendsApp());
+    openWin({id:winId,title:'Friends',icon:'👥',kind:'react',node:div,w:700,h:560});
+  } else if (id==='calculator') {
+    openWin({id:winId,title:'Calculator',icon:'🧮',kind:'react',node:buildCalcApp(),w:340,h:500});
+  } else if (id==='notes') {
+    openWin({id:winId,title:'Notes',icon:'📝',kind:'react',node:buildNotesApp(),w:780,h:540});
+  } else if (id==='settings') {
+    openWin({id:winId,title:'Settings',icon:'⚙️',kind:'react',node:buildSettingsApp(),w:700,h:600});
+  }
+}
+
+// Browser helpers
+function bb_go(wid) {
+  const inp=document.getElementById('bb-url-'+wid);
+  let v=inp.value.trim();
+  if(!v) return;
+  if(!/^https?:\/\//i.test(v)){
+    if(/\s/.test(v)||!/\./.test(v)) v='https://duckduckgo.com/?q='+encodeURIComponent(v);
+    else v='https://'+v;
+  }
+  inp.value=v;
+  const frame=document.getElementById('bb-frame-'+wid);
+  frame.src=v;
+  const hist=window['bb_hist_'+wid];
+  const idx=window['bb_idx_'+wid];
+  window['bb_hist_'+wid]=hist.slice(0,idx+1).concat(v);
+  window['bb_idx_'+wid]=window['bb_hist_'+wid].length-1;
+  document.getElementById('bb-back-'+wid).disabled=window['bb_idx_'+wid]<=0;
+  document.getElementById('bb-fwd-'+wid).disabled=true;
+}
+function bb_back(wid){
+  let idx=window['bb_idx_'+wid];
+  if(idx<=0) return;
+  idx--; window['bb_idx_'+wid]=idx;
+  const url=window['bb_hist_'+wid][idx];
+  document.getElementById('bb-frame-'+wid).src=url;
+  document.getElementById('bb-url-'+wid).value=url;
+  document.getElementById('bb-back-'+wid).disabled=idx<=0;
+  document.getElementById('bb-fwd-'+wid).disabled=false;
+}
+function bb_fwd(wid){
+  const hist=window['bb_hist_'+wid];
+  let idx=window['bb_idx_'+wid];
+  if(idx>=hist.length-1) return;
+  idx++; window['bb_idx_'+wid]=idx;
+  const url=hist[idx];
+  document.getElementById('bb-frame-'+wid).src=url;
+  document.getElementById('bb-url-'+wid).value=url;
+  document.getElementById('bb-back-'+wid).disabled=false;
+  document.getElementById('bb-fwd-'+wid).disabled=idx>=hist.length-1;
+}
+function bb_reload(wid){ const f=document.getElementById('bb-frame-'+wid); if(f) f.src=f.src; }
+
+// ─── Calculator ───
+function buildCalcApp() {
+  const div=document.createElement('div'); div.className='calc-wrap';
+  let expr='', result='0';
+  div.innerHTML=`<div class="calc-disp"><div class="calc-expr" id="calc-expr">&nbsp;</div><div class="calc-result" id="calc-result">0</div></div>
+    <div class="calc-row">
+      <button class="calc-key util" onclick="calcPress('AC')">AC</button>
+      <button class="calc-key util" onclick="calcPress('DEL')">⌫</button>
+      <button class="calc-key util" onclick="calcPress('(')">(</button>
+      <button class="calc-key util" onclick="calcPress(')')">)</button>
+    </div>
+    ${[['7','8','9','÷'],['4','5','6','×'],['1','2','3','−'],['0','.','=','+']].map(row=>
+      `<div class="calc-row">${row.map(k=>`<button class="calc-key ${['+','−','×','÷','='].includes(k)?'op':''}" onclick="calcPress('${k}')">${k}</button>`).join('')}</div>`
+    ).join('')}`;
+  window.calcPress = k => {
+    if(k==='AC'){expr='';result='0';}
+    else if(k==='DEL'){expr=expr.slice(0,-1);}
+    else if(k==='='){
+      try{
+        const e=expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+        result=String(Math.round(Function('"use strict";return('+e+')')() * 1e10)/1e10);
+        if(!isFinite(result)||result==='NaN') result='Error';
+      }catch{result='Error';}
+    } else { expr+=k; }
+    div.querySelector('#calc-expr').textContent=expr||'\u00a0';
+    div.querySelector('#calc-result').textContent=result;
+  };
+  return div;
+}
+
+// ─── Notes ───
+function buildNotesApp() {
+  const KEY='mos_notes_'+(currentUser?.id||'anon');
+  let notes=[], activeId=null;
+  try{notes=JSON.parse(localStorage.getItem(KEY)||'[]');}catch{}
+  if(notes[0]) activeId=notes[0].id;
+  const div=document.createElement('div'); div.className='notes-wrap';
+  const render=()=>{
+    const active=notes.find(n=>n.id===activeId);
+    div.innerHTML=`<div class="notes-sidebar">
+      <button class="mos-btn primary" style="margin:11px;flex:0 0 auto" onclick="notesNew()">+ New note</button>
+      <div class="notes-list">${notes.length===0?'<div style="padding:14px;font-size:.78em;color:var(--mos-text-faint)">No notes yet</div>':
+        notes.map(n=>`<div class="note-item ${n.id===activeId?'active':''}" onclick="notesActive('${n.id}')">
+          <div class="note-item-title">${n.title||'Untitled'}</div>
+          <div class="note-item-sub">${new Date(n.updated).toLocaleString()}</div>
+        </div>`).join('')}
+      </div></div>
+      <div class="notes-main">${active?`
+        <div class="notes-toolbar">
+          <input class="notes-title-input" value="${active.title.replace(/"/g,'&quot;')}" oninput="notesUpdateTitle(this.value)" />
+          <button class="mos-btn secondary" onclick="notesDelete()">Delete</button>
+        </div>
+        <textarea class="notes-body" oninput="notesUpdateBody(this.value)" placeholder="Write something…">${active.body}</textarea>`:
+        '<div class="msg-empty"><div style="font-size:2.5em;opacity:.4">📝</div><div>Pick or create a note</div></div>'}
+      </div>`;
+  };
+  const save=()=>localStorage.setItem(KEY,JSON.stringify(notes));
+  window.notesNew=()=>{const n={id:'n-'+Date.now(),title:'Untitled',body:'',updated:Date.now()};notes.unshift(n);activeId=n.id;save();render();};
+  window.notesActive=id=>{activeId=id;render();};
+  window.notesUpdateTitle=v=>{const n=notes.find(x=>x.id===activeId);if(n){n.title=v;n.updated=Date.now();save();}};
+  window.notesUpdateBody=v=>{const n=notes.find(x=>x.id===activeId);if(n){n.body=v;n.updated=Date.now();save();}};
+  window.notesDelete=()=>{notes=notes.filter(n=>n.id!==activeId);activeId=notes[0]?.id||null;save();render();};
+  render(); return div;
+}
+
+// ─── Settings ───
+function buildSettingsApp() {
+  const div=document.createElement('div'); div.className='settings-wrap';
+  const walls=[{id:'aurora',name:'Aurora',grad:'linear-gradient(135deg,#0d0d2e,#1a0a3e 35%,#0a1a40 65%,#0d0d2e)'},{id:'sunset',name:'Sunset',grad:'linear-gradient(135deg,#2d0a3e,#5a0a3e 35%,#5a200a)'},{id:'deep',name:'Deep Sea',grad:'linear-gradient(135deg,#000814,#001d3d 50%,#003566)'},{id:'forest',name:'Forest',grad:'linear-gradient(135deg,#0a200a,#0a3a1a 50%,#0a2a3a)'}];
+  div.innerHTML=`<h2 style="margin-bottom:5px">Settings</h2>
+    <p style="color:var(--mos-text-dim);font-size:.84em;margin-bottom:22px">Personalise your Maths OS.</p>
+    <div class="settings-section">
+      <h3>Account</h3>
+      <span class="settings-label">Username</span><div style="color:var(--mos-text-dim);margin-bottom:11px">@${currentUser?.username}</div>
+      <span class="settings-label">Friend Code</span><div style="font-family:'JetBrains Mono',monospace;letter-spacing:2px;margin-bottom:11px">${currentUser?.friend_code}</div>
+      <span class="settings-label">Display Name</span>
+      <div class="inline-row"><input class="mos-input" style="margin:0" id="sett-dname" value="${currentUser?.display_name||''}" />
+      <button class="mos-btn secondary" onclick="settSaveName()">Save</button></div>
+    </div>
+    <div class="settings-section">
+      <h3>Wallpaper</h3>
+      <div class="wall-grid">${walls.map(w=>`<button class="wall-tile ${wallpaper===w.id?'active':''}" style="background:${w.grad}" onclick="settWall('${w.id}',this)"><span>${w.name}</span></button>`).join('')}</div>
+    </div>
+    <div class="settings-section">
+      <h3>Sign Out</h3>
+      <button class="mos-btn secondary" onclick="doLogout()">Sign out</button>
+    </div>`;
+  window.settSaveName=async()=>{
+    const n=document.getElementById('sett-dname').value.trim();
+    if(!n||!currentUser) return;
+    const {error}=await sb.from('users').update({display_name:n}).eq('id',currentUser.id);
+    if(error) toast(error.message,'warn'); else{currentUser.display_name=n;localStorage.setItem('mos_session_user',JSON.stringify(currentUser));document.getElementById('tb-username').textContent=n;toast('Display name updated','success');}
+  };
+  window.settWall=(id,btn)=>{document.querySelectorAll('.wall-tile').forEach(b=>b.classList.remove('active'));btn.classList.add('active');applyWallpaper(id);};
+  return div;
+}
+
+// ─── Friends ───
+function buildFriendsApp() {
+  const div=document.createElement('div'); div.className='friends-wrap';
+  let friends=[], pendingIn=[], pendingOut=[];
+  async function load(){
+    if(!currentUser) return;
+    const {data:rows}=await sb.from('friendships').select('id,user_id,friend_id,status').or(`user_id.eq.${currentUser.id},friend_id.eq.${currentUser.id}`);
+    const list=rows||[];
+    const otherIds=list.map(r=>r.user_id===currentUser.id?r.friend_id:r.user_id).filter(Boolean);
+    if(!otherIds.length){friends=[];pendingIn=[];pendingOut=[];render();return;}
+    const {data:users}=await sb.from('users').select('id,username,display_name,friend_code').in('id',otherIds);
+    const {data:pres}=await sb.from('user_presence').select('user_id,last_active,game_name').in('user_id',otherIds);
+    const byId=new Map((pres||[]).map(p=>[p.user_id,p]));
+    friends=[];pendingIn=[];pendingOut=[];
+    list.forEach(r=>{
+      const otherId=r.user_id===currentUser.id?r.friend_id:r.user_id;
+      const u=(users||[]).find(x=>x.id===otherId);
+      if(!u) return;
+      const p=byId.get(u.id);
+      const obj={...u,rowId:r.id,last_active:p?.last_active,game_name:p?.game_name};
+      if(r.status==='accepted') friends.push(obj);
+      else if(r.user_id===currentUser.id) pendingOut.push(obj);
+      else pendingIn.push(obj);
+    });
+    render();
+  }
+  function presClass(la){if(!la)return'offline';const d=Date.now()-new Date(la).getTime();return d<75000?'online':d<300000?'away':'offline';}
+  function render(){
+    div.innerHTML=`<div class="friends-code-box">
+      <div><div style="font-size:.72em;color:var(--mos-text-faint);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">YOUR FRIEND CODE</div>
+      <div class="code-display">${currentUser?.friend_code||'------'}</div></div>
+      <input class="mos-input" id="fc-input" placeholder="Enter friend code" style="width:180px;margin:0" maxlength="10" />
+      <button class="mos-btn secondary" onclick="fcAdd()">Add Friend</button>
+    </div>
+    ${pendingIn.length?`<p class="section-label" style="margin-bottom:12px">Incoming Requests</p><div class="friend-grid">${pendingIn.map(f=>fCard(f,'in')).join('')}</div>`:''}
+    ${pendingOut.length?`<p class="section-label" style="margin-bottom:12px">Pending</p><div class="friend-grid">${pendingOut.map(f=>fCard(f,'out')).join('')}</div>`:''}
+    <p class="section-label" style="margin-bottom:12px">Friends (${friends.length})</p>
+    ${friends.length===0?'<div class="mos-empty"><span style="font-size:2.5em;opacity:.4">👥</span><span>No friends yet — share your code above</span></div>':'<div class="friend-grid">'+friends.map(f=>fCard(f,'accepted')).join('')+'</div>'}`;
+  }
+  function fCard(f,type){
+    const display=f.display_name||f.username;
+    const pc=presClass(f.last_active);
+    return`<div class="friend-card"><div class="friend-head"><div class="mos-avatar">${display[0].toUpperCase()}<span class="av-dot ${pc}"></span></div>
+      <div><div class="f-name">${display}</div><div class="f-handle">@${f.username}</div></div></div>
+      <div class="f-actions">
+        ${type==='in'?`<button onclick="fcAccept('${f.rowId}')">Accept</button>`:''}
+        ${type==='accepted'?`<button onclick="msgFriend('${f.id}')">💬 Message</button>`:''}
+        <button class="danger" onclick="fcRemove('${f.rowId}')">Remove</button>
+      </div></div>`;
+  }
+  window.fcAdd=async()=>{
+    const c=document.getElementById('fc-input')?.value?.trim()?.toUpperCase();
+    if(!c||!currentUser) return;
+    if(c===currentUser.friend_code){toast("That's your code 😅",'warn');return;}
+    const {data:target}=await sb.from('users').select('id,username').eq('friend_code',c).maybeSingle();
+    if(!target){toast('No user with that code','warn');return;}
+    const {error}=await sb.from('friendships').insert({user_id:currentUser.id,friend_id:target.id,status:'pending'});
+    if(error) toast(error.message,'warn'); else{toast(`Request sent to ${target.username}`,'success');load();}
+  };
+  window.fcAccept=async rowId=>{await sb.from('friendships').update({status:'accepted'}).eq('id',rowId);toast('Friend added 🎉','success');load();};
+  window.fcRemove=async rowId=>{await sb.from('friendships').delete().eq('id',rowId);load();};
+  window.msgFriend=id=>{ openBuiltin('messages'); };
+  load(); return div;
+}
+
+// ─── Messages ───
+function buildMessagesApp(winId) {
+  const div=document.createElement('div'); div.className='msg-wrap';
+  let friends=[], activeId=null, messages=[], theirTyping=false;
+  let typingTimer=null, msgChannel=null;
+
+  async function loadFriends(){
+    if(!currentUser) return;
+    const {data:rows}=await sb.from('friendships').select('user_id,friend_id,status').or(`user_id.eq.${currentUser.id},friend_id.eq.${currentUser.id}`).eq('status','accepted');
+    const ids=(rows||[]).map(r=>r.user_id===currentUser.id?r.friend_id:r.user_id).filter(Boolean);
+    if(!ids.length){friends=[];renderSidebar();return;}
+    const {data:users}=await sb.from('users').select('id,username,display_name').in('id',ids);
+    const {data:pres}=await sb.from('user_presence').select('user_id,last_active,game_name').in('user_id',ids);
+    const byId=new Map((pres||[]).map(p=>[p.user_id,p]));
+    friends=(users||[]).map(u=>({...u,last_active:byId.get(u.id)?.last_active,game_name:byId.get(u.id)?.game_name}));
+    renderSidebar();
+  }
+
+  function presClass(la){if(!la)return'offline';const d=Date.now()-new Date(la).getTime();return d<75000?'online':d<300000?'away':'offline';}
+
+  function renderSidebar(){
+    const sb2=div.querySelector('.msg-sidebar');
+    if(!sb2) return;
+    sb2.querySelector('.msg-list').innerHTML=friends.length===0?'<div style="padding:14px;font-size:.77em;color:var(--mos-text-faint)">Add friends in the Friends app first.</div>':
+      friends.map(f=>`<div class="msg-item ${f.id===activeId?'active':''}" onclick="msgSelectFriend('${f.id}')">
+        <div class="mos-avatar" style="width:33px;height:33px;font-size:.88em">${(f.display_name||f.username)[0].toUpperCase()}<span class="av-dot ${presClass(f.last_active)}"></span></div>
+        <div class="msg-meta"><div class="msg-iname">${f.display_name||f.username}</div><div class="msg-isub">${presClass(f.last_active)}</div></div>
+      </div>`).join('');
+  }
+
+  function renderMain(){
+    const m=div.querySelector('.msg-main');
+    if(!m) return;
+    const f=friends.find(x=>x.id===activeId);
+    if(!f){m.innerHTML='<div class="msg-empty"><div style="font-size:2.5em;opacity:.4">💬</div><div>Pick a friend to start chatting</div></div>';return;}
+    m.innerHTML=`<div class="msg-hdr">
+      <div class="mos-avatar">${(f.display_name||f.username)[0].toUpperCase()}</div>
+      <div><div style="font-weight:700">${f.display_name||f.username}</div><div style="font-size:.7em;color:var(--mos-text-dim)">${presClass(f.last_active)}</div></div>
+    </div>
+    <div class="msg-thread" id="msg-thread-${winId}"></div>
+    <div class="chat-emojibar">${['👋','😂','❤️','🔥','🎉','👍','😎','😢','🙏','🤔','💯','🚀'].map(e=>`<button class="chat-emoji" onclick="msgEmoji('${e}')">${e}</button>`).join('')}</div>
+    <div class="msg-composer">
+      <input id="msg-input-${winId}" placeholder="Message…" onkeydown="msgKey(event,'${winId}')" oninput="msgTyping('${winId}')" />
+      <button class="mos-btn secondary" onclick="msgSend('${winId}')">Send</button>
+    </div>`;
+    renderMessages();
+  }
+
+  function renderMessages(){
+    const thread=div.querySelector(`#msg-thread-${winId}`);
+    if(!thread) return;
+    let html='', lastDay='', lastSender=null;
+    messages.forEach(msg=>{
+      const d=msg.created_at?new Date(msg.created_at):new Date();
+      const day=d.toDateString();
+      if(day!==lastDay){
+        const today=new Date().toDateString(),yest=new Date(Date.now()-864e5).toDateString();
+        html+=`<div class="chat-day">${day===today?'Today':day===yest?'Yesterday':d.toLocaleDateString()}</div>`;
+        lastDay=day; lastSender=null;
+      }
+      const mine=msg.sender_id===currentUser?.id;
+      html+=`<div class="bubble ${mine?'mine':'theirs'}">${msg.content||''}<div class="bubble-meta">${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+      lastSender=msg.sender_id;
+    });
+    if(theirTyping) html+=`<div class="bubble theirs" style="opacity:.6;font-size:.8em">typing…</div>`;
+    thread.innerHTML=html;
+    thread.scrollTop=thread.scrollHeight;
+  }
+
+  async function loadMessages(){
+    if(!currentUser||!activeId) return;
+    const {data}=await sb.from('messages').select('*')
+      .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeId}),and(sender_id.eq.${activeId},receiver_id.eq.${currentUser.id})`)
+      .order('created_at',{ascending:true}).limit(200);
+    messages=data||[];
+    renderMessages();
+  }
+
+  function subscribeMessages(){
+    if(msgChannel) sb.removeChannel(msgChannel);
+    if(!currentUser||!activeId) return;
+    msgChannel=sb.channel(`dm:${currentUser.id}:${activeId}`)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},payload=>{
+        const msg=payload.new;
+        if((msg.sender_id===currentUser.id&&msg.receiver_id===activeId)||(msg.sender_id===activeId&&msg.receiver_id===currentUser.id)){
+          messages=messages.filter(m=>m.id>0);
+          messages.push(msg); renderMessages();
+        }
+      }).subscribe();
+  }
+
+  window.msgSelectFriend=id=>{activeId=id;loadMessages();subscribeMessages();renderSidebar();renderMain();};
+  window.msgSend=async wid=>{
+    if(wid!==winId) return;
+    const inp=div.querySelector(`#msg-input-${winId}`);
+    if(!inp||!inp.value.trim()||!activeId||!currentUser) return;
+    const content=inp.value.trim(); inp.value='';
+    messages.push({id:-Date.now(),sender_id:currentUser.id,receiver_id:activeId,content,created_at:new Date().toISOString()});
+    renderMessages();
+    const {error}=await sb.from('messages').insert({sender_id:currentUser.id,receiver_id:activeId,content,content_type:'text',status:'sent'});
+    if(error){messages=messages.filter(m=>m.id>0);renderMessages();}
+  };
+  window.msgKey=(e,wid)=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();msgSend(wid);} };
+  window.msgEmoji=em=>{ const inp=div.querySelector(`#msg-input-${winId}`); if(inp) inp.value+=em; };
+  window.msgTyping=async wid=>{
+    if(wid!==winId||!currentUser||!activeId) return;
+    await sb.from('typing_status').upsert({user_id:currentUser.id,receiver_id:activeId,is_typing:true,updated_at:new Date().toISOString()},{onConflict:'user_id,receiver_id'});
+    if(typingTimer) clearTimeout(typingTimer);
+    typingTimer=setTimeout(async()=>{await sb.from('typing_status').upsert({user_id:currentUser.id,receiver_id:activeId,is_typing:false,updated_at:new Date().toISOString()},{onConflict:'user_id,receiver_id'});},2000);
+  };
+
+  div.innerHTML=`<div class="msg-sidebar"><div class="msg-sidebar-hdr">Friends</div><div class="msg-list"></div></div><div class="msg-main"><div class="msg-empty"><div style="font-size:2.5em;opacity:.4">💬</div><div>Pick a friend to start chatting</div></div></div>`;
+  loadFriends();
+  return div;
+}
+
+// ═══════════════════════════════════════════════════════
+//  GAMES & WEB APPS
+// ═══════════════════════════════════════════════════════
+function openGame(g) {
+  const id=newWinId('game');
+  sendHeartbeat(g.name,g.url);
+  openWin({id,title:g.name,icon:g.icon,kind:'iframe',src:g.url,rawUrl:g.url,w:1024,h:640,onClose:()=>sendHeartbeat(null,null)});
+}
+function openWebUrl(url, title, icon) {
+  const id=newWinId('web');
+  openWin({id,title,icon,kind:'iframe',src:url,rawUrl:url});
+}
+
+// ═══════════════════════════════════════════════════════
+//  PINNED
+// ═══════════════════════════════════════════════════════
+function isPinned(id){ return pinned.some(p=>p.id===id); }
+function togglePin(item){
+  if(isPinned(item.id)){pinned=pinned.filter(p=>p.id!==item.id);toast('Unpinned','info');}
+  else{pinned.push(item);toast('📌 Pinned: '+item.name,'success');}
+  localStorage.setItem('mos_pinned',JSON.stringify(pinned));
+  renderPinned(); renderDockPinned(); renderAllApps();
+}
+function launchPin(item){
+  if(item.type==='game'){const g=GAMES.find(x=>x.id===item.id);if(g)openGame(g);}
+  else if(item.builtin) openBuiltin(item.builtin);
+  else if(item.url) openWebUrl(item.url,item.name,item.icon);
+}
+function renderPinned(){
+  const row=document.getElementById('pinned-row');
+  if(!row) return;
+  if(!pinned.length){row.innerHTML='<div class="empty-pins">Press ⌘K or Ctrl+K to launch anything</div>';renderDockPinned();return;}
+  row.innerHTML=pinned.map(p=>`<div class="chip" onclick="launchPin(${JSON.stringify(p).replace(/"/g,'&quot;')})">
+    <span style="font-size:1.2em">${p.icon}</span><span>${p.name}</span>
+    <button class="chip-x" onclick="event.stopPropagation();togglePin(${JSON.stringify(p).replace(/"/g,'&quot;')})">✕</button>
+  </div>`).join('');
+  renderDockPinned();
+}
+function renderDockPinned(){
+  const dp=document.getElementById('dock-pinned');
+  if(!dp) return;
+  dp.innerHTML=pinned.slice(0,6).map(p=>`<button class="dock-btn dock-small" onclick="launchPin(${JSON.stringify(p).replace(/"/g,'&quot;')})" title="${p.name}">
+    <span class="dock-icon" style="font-size:1.2em">${p.icon}</span>
+    <span class="dock-tip">${p.name}</span>
+  </button>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  ALL APPS
+// ═══════════════════════════════════════════════════════
+function showAllapps(tab) { allappsTab=tab; renderAllApps(); document.getElementById('allapps').classList.add('open'); }
+function closeAllapps(){ document.getElementById('allapps').classList.remove('open'); }
+function setAppsTab(t){ allappsTab=t; document.querySelectorAll('.allapps-tab').forEach((b,i)=>b.classList.toggle('active',(t==='apps'?i===0:i===1))); renderAllApps(); }
+
+function renderAllApps(){
+  const c=document.getElementById('allapps-content');
+  if(!c) return;
+  document.getElementById('allapps-title').textContent=allappsTab==='apps'?'Apps':'Games';
+  document.querySelectorAll('.allapps-tab').forEach((b,i)=>b.classList.toggle('active',(allappsTab==='apps'?i===0:i===1)));
+  if(allappsTab==='apps'){
+    const allApps=[...SYSTEM_APPS,...customApps.map(a=>({...a,type:'custom'}))];
+    c.innerHTML=`<p class="section-label">System Apps</p>
+      <div class="app-grid">${SYSTEM_APPS.map(app=>`
+        <div class="app-tile" onclick="appLaunch('${app.id}')">
+          <button class="pin-btn ${isPinned(app.id)?'pinned':''}" onclick="event.stopPropagation();pinApp('${app.id}')">${isPinned(app.id)?'📌':'📍'}</button>
+          <div class="app-icon-wrap">${app.icon}</div>
+          <div class="app-name">${app.name}</div>
+        </div>`).join('')}</div>
+      ${customApps.length?`<p class="section-label">Your Apps</p><div class="app-grid">${customApps.map(app=>`
+        <div class="app-tile" onclick="appLaunch('${app.id}')">
+          <button class="pin-btn ${isPinned(app.id)?'pinned':''}" onclick="event.stopPropagation();pinApp('${app.id}')">${isPinned(app.id)?'📌':'📍'}</button>
+          <div class="app-icon-wrap">${app.icon}</div>
+          <div class="app-name">${app.name}</div>
+        </div>`).join('')}</div>`:''}
+      <button class="mos-btn secondary" style="margin-top:10px" onclick="openAddModal()">➕ Add Custom App</button>`;
+  } else {
+    c.innerHTML=`<div class="game-grid">${GAMES.map(g=>`
+      <div class="game-card" onclick="openGame(${JSON.stringify(g).replace(/"/g,'&quot;')});closeAllapps()">
+        <div class="game-thumb" style="background:linear-gradient(135deg,${g.grad[0]},${g.grad[1]})">${g.icon}</div>
+        <div class="game-name">${g.name}</div>
+        <button class="game-pin ${isPinned(g.id)?'pinned':''}" onclick="event.stopPropagation();pinGame('${g.id}')">${isPinned(g.id)?'📌':'📍'}</button>
+      </div>`).join('')}</div>`;
+  }
+}
+window.appLaunch=id=>{
+  const sys=SYSTEM_APPS.find(a=>a.id===id);
+  if(sys){if(sys.builtin)openBuiltin(sys.builtin);else if(sys.url)openWebUrl(sys.url,sys.name,sys.icon);}
+  else{const ca=customApps.find(a=>a.id===id);if(ca)openWebUrl(ca.url,ca.name,ca.icon);}
+  closeAllapps();
+};
+window.pinApp=id=>{
+  const sys=SYSTEM_APPS.find(a=>a.id===id)||customApps.find(a=>a.id===id);
+  if(!sys) return;
+  togglePin({id:sys.id,type:sys.builtin?'app':'custom',name:sys.name,icon:sys.icon,url:sys.url,builtin:sys.builtin});
+};
+window.pinGame=id=>{const g=GAMES.find(x=>x.id===id);if(g)togglePin({id:g.id,type:'game',name:g.name,icon:g.icon,url:g.url});};
+
+// ═══════════════════════════════════════════════════════
+//  ADD CUSTOM APP MODAL
+// ═══════════════════════════════════════════════════════
+function openAddModal(){
+  closeAllapps();
+  selectedIcon='🌐';
+  document.getElementById('add-name').value='';
+  document.getElementById('add-url').value='';
+  document.getElementById('icon-picker').innerHTML=ICON_OPTIONS.map(ic=>`<button class="icon-opt ${ic===selectedIcon?'selected':''}" onclick="selectIcon('${ic}')">${ic}</button>`).join('');
+  document.getElementById('add-modal').classList.add('open');
+}
+function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
+window.selectIcon=ic=>{selectedIcon=ic;document.querySelectorAll('.icon-opt').forEach(b=>b.classList.toggle('selected',b.textContent===ic));};
+function saveCustomApp(){
+  const name=document.getElementById('add-name').value.trim();
+  let url=document.getElementById('add-url').value.trim();
+  if(!name||!url){toast('Name and URL required','warn');return;}
+  if(!/^https?:\/\//.test(url)) url='https://'+url;
+  const app={id:'custom-'+Date.now(),name,url,icon:selectedIcon};
+  customApps.push(app);
+  localStorage.setItem('mos_custom_apps',JSON.stringify(customApps));
+  rebuildLauncher(); closeAddModal(); toast('App added','success');
+}
+
+// ═══════════════════════════════════════════════════════
+//  LAUNCHER
+// ═══════════════════════════════════════════════════════
+function rebuildLauncher(){
+  launcherItems=[];
+  SYSTEM_APPS.forEach(a=>launcherItems.push({id:a.id,name:a.name,icon:a.icon,kind:a.builtin?'system':'app',run:()=>{if(a.builtin)openBuiltin(a.builtin);else if(a.url)openWebUrl(a.url,a.name,a.icon);}}));
+  customApps.forEach(a=>launcherItems.push({id:a.id,name:a.name,icon:a.icon,kind:'app',run:()=>openWebUrl(a.url,a.name,a.icon)}));
+  GAMES.forEach(g=>launcherItems.push({id:g.id,name:g.name,icon:g.icon,kind:'game',run:()=>openGame(g)}));
+}
+
+function openLauncher(){
+  document.getElementById('launcher').classList.add('open');
+  const inp=document.getElementById('launcher-input');
+  inp.value=''; launcherIdx=0; filterLauncher();
+  setTimeout(()=>inp.focus(),30);
+}
+function closeLauncher(){ document.getElementById('launcher').classList.remove('open'); }
+function filterLauncher(){
+  const q=document.getElementById('launcher-input').value.trim().toLowerCase();
+  const filtered=!q?launcherItems.slice(0,40):launcherItems.filter(i=>i.name.toLowerCase().includes(q)||i.kind.includes(q)).slice(0,40);
+  const res=document.getElementById('launcher-results');
+  if(!filtered.length){res.innerHTML='<div class="l-none">No results</div>';return;}
+  res.innerHTML=filtered.map((i,n)=>`<div class="l-row ${n===launcherIdx?'active':''}" onmouseenter="launcherIdx=${n};filterLauncher()" onclick="launcherFire(${n})">
+    <span style="font-size:1.3em">${i.icon}</span>
+    <span style="flex:1;font-weight:700">${i.name}</span>
+    <span class="l-kind">${i.kind}</span>
+  </div>`).join('');
+  window._launcherFiltered=filtered;
+}
+function launcherFire(n){
+  const f=window._launcherFiltered||[];
+  if(f[n]){f[n].run();closeLauncher();}
+}
+function launcherKey(e){
+  const f=window._launcherFiltered||[];
+  if(e.key==='Escape') closeLauncher();
+  else if(e.key==='ArrowDown'){launcherIdx=Math.min(f.length-1,launcherIdx+1);filterLauncher();}
+  else if(e.key==='ArrowUp'){launcherIdx=Math.max(0,launcherIdx-1);filterLauncher();}
+  else if(e.key==='Enter'&&f[launcherIdx]){f[launcherIdx].run();closeLauncher();}
+}
+
+// ═══════════════════════════════════════════════════════
+//  TOASTS
+// ═══════════════════════════════════════════════════════
+let _toastId=0;
+function toast(msg,kind='info'){
+  const id=++_toastId;
+  const div=document.createElement('div');
+  div.className=`toast ${kind}`; div.textContent=msg;
+  document.getElementById('toasts').appendChild(div);
+  setTimeout(()=>div.remove(),2400);
+}
+
+// ═══════════════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(currentUser){if(document.getElementById('launcher').classList.contains('open'))closeLauncher();else openLauncher();}}
+  if(e.key==='Escape'){closeLauncher();closeAllapps();closeAddModal();}
+});
+
+// Init
+rebuildLauncher();
+renderPinned();
+</script>
+</body>
+</html>
