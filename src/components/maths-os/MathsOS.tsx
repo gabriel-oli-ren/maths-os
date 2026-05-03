@@ -52,7 +52,7 @@ export function MathsOS() {
   const [addOpen, setAddOpen] = useState(false);
   const [launcherOpen, setLauncherOpen] = useState(false);
   const [now, setNow] = useState(new Date());
-  const [showAllApps, setShowAllApps] = useState(false);
+  const [showAllApps, setShowAllApps] = useState<false | "apps" | "games">(false);
 
   usePresenceHeartbeat();
 
