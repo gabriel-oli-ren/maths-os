@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Loading…</title>
+</head>
+<body>
+<meta name="google-adsense-account" content="ca-pub-1664746955932118">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1664746955932118"
+     crossorigin="anonymous"></script>
+<script>
+  const win = window.open("about:blank", "_blank");
+
+  win.document.open();
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>about:blank</title>
+      <style>
+        html, body {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+        iframe {
+          width: 100%;
+          height: 100%;
+          border: none;
+        }
+      </style>
+    </head>
+    <body>
+      <iframe src="maths.html"></iframe>
+    </body>
+    </html>
+  `);
+  win.document.close();
+
+  window.location.replace("https://canvas.inspirededucationschools.com");
+</script>
+</body>
+</html>
