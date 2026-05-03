@@ -389,7 +389,7 @@ export function MathsOS() {
         <DockBtn icon="🌐" label="Browse" onClick={() => openBuiltin("browse")} />
         <DockBtn icon="💬" label="Chat" onClick={() => openBuiltin("messages")} />
         <DockBtn icon="👥" label="Friends" onClick={() => openBuiltin("friends")} />
-        <DockBtn icon="🎮" label="Games" onClick={() => setShowAllApps(true)} />
+        <DockBtn icon="🎮" label="Games" onClick={() => setShowAllApps("games")} />
         <DockBtn icon="⚙️" label="Settings" onClick={() => openBuiltin("settings")} />
         <div className="mos-dock-sep" />
         <div className="mos-dock-pinned">
@@ -427,7 +427,7 @@ export function MathsOS() {
           ))}
         </div>
         <div className="mos-dock-sep" />
-        <DockBtn icon="➕" label="Apps" onClick={() => setShowAllApps(true)} />
+        <DockBtn icon="🧩" label="Apps" onClick={() => setShowAllApps("apps")} />
       </div>
 
       {/* LAUNCHER */}
