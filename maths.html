@@ -349,7 +349,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',system-ui,sans-serif;
   <div class="dock-sep" id="taskbar-sep" style="display:none"></div>
   <div class="taskbar" id="taskbar"></div>
   <div class="dock-sep"></div>
-  <button class="dock-btn" onclick="showAllapps('apps')"><span class="dock-icon">🧩</span><span class="dock-label">Apps</span><span class="dock-tip">All Apps</span></button>
+<button class="dock-btn" onclick="openBugReport()"><span class="dock-icon">🐞</span><span class="dock-label">Bug</span><span class="dock-tip">Report a bug</span></button>
 </div>
 
 <!-- TOASTS -->
@@ -392,6 +392,7 @@ const SYSTEM_APPS = [
   {id:'sys-calc',name:'Calculator',icon:'🧮',builtin:'calculator'},
   {id:'sys-notes',name:'Notes',icon:'📝',builtin:'notes'},
   {id:'sys-settings',name:'Settings',icon:'⚙️',builtin:'settings'},
+  {id:'sys-bugreport', name:'Send a bug', icon:'🐞', url:'https://docs.google.com/forms/d/e/1FAIpQLSeF6q5CnTvBYsx-KSaITnoU9q9oOJrX3As8y_ZDsnsay_1wmg/viewform?embedded=true'},
   {id:'sys-search',name:'Search',icon:'🔍',url:'https://duckduckgo.com'},
   {id:'sys-youtube',name:'YouTube',icon:'▶️',url:'https://youtube.com'},
   {id:'sys-wiki',name:'Wikipedia',icon:'📚',url:'https://wikipedia.org'},
@@ -737,6 +738,15 @@ function openBuiltin(id) {
   } else if (id==='settings') {
     openWin({id:winId,title:'Settings',icon:'⚙️',kind:'react',node:buildSettingsApp(),w:700,h:600});
   }
+}
+
+// Bug report function
+function openBugReport() {
+  openWebUrl(
+    'https://docs.google.com/forms/d/e/1FAIpQLSeF6q5CnTvBYsx-KSaITnoU9q9oOJrX3As8y_ZDsnsay_1wmg/viewform?embedded=true',
+    'Send a bug',
+    '🐞'
+  );
 }
 
 // Browser helpers
