@@ -6,6 +6,7 @@ import {
   ICON_OPTIONS,
   SYSTEM_APPS,
   WALLPAPERS,
+  faviconFor,
   type BuiltinAppId,
   type CustomApp,
   type Game,
@@ -51,7 +52,7 @@ export function MathsOS() {
   const [addOpen, setAddOpen] = useState(false);
   const [launcherOpen, setLauncherOpen] = useState(false);
   const [now, setNow] = useState(new Date());
-  const [showAllApps, setShowAllApps] = useState(false);
+  const [showAllApps, setShowAllApps] = useState<false | "apps" | "games">(false);
 
   usePresenceHeartbeat();
 
@@ -263,51 +264,33 @@ export function MathsOS() {
         </WindowFrame>
       ))}
 
-      {/* SHOW ALL APPS overlay */}
+      {/* SHOW ALL APPS / GAMES overlay (tabbed) */}
       {showAllApps && (
         <div className="mos-allapps" onClick={() => setShowAllApps(false)}>
           <div className="mos-allapps-grid" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ width: "100%", marginBottom: 6 }}>All apps & games</h2>
-            <p className="mos-section-label">System</p>
-            <div className="mos-app-grid" style={{ width: "100%" }}>
-              {SYSTEM_APPS.map((app) => {
-                const pinnedNow = isPinned(app.id);
-                return (
-                  <div
-                    key={app.id}
-                    className={`mos-app-tile ${pinnedNow ? "pinned" : ""}`}
-                    onClick={() => {
-                      if (app.builtin) openBuiltin(app.builtin);
-                      else if (app.url) openWebUrl(app.url, app.name, app.icon);
-                      setShowAllApps(false);
-                    }}
-                  >
-                    <button
-                      className={`mos-pin-btn ${pinnedNow ? "is-pinned" : ""}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        togglePin({ id: app.id, type: "app", name: app.name, icon: app.icon, url: app.url, builtin: app.builtin });
-                      }}
-                    >{pinnedNow ? "📌" : "📍"}</button>
-                    <span className="mos-app-icon">{app.icon}</span>
-                    <span className="mos-app-name">{app.name}</span>
-                  </div>
-                );
-              })}
+            <div className="mos-allapps-header">
+              <h2 style={{ margin: 0 }}>{showAllApps === "apps" ? "Apps" : "Games"}</h2>
+              <div className="mos-allapps-tabs">
+                <button className={`mos-allapps-tab ${showAllApps === "apps" ? "active" : ""}`} onClick={() => setShowAllApps("apps")}>🧩 Apps</button>
+                <button className={`mos-allapps-tab ${showAllApps === "games" ? "active" : ""}`} onClick={() => setShowAllApps("games")}>🎮 Games</button>
+              </div>
+              <button className="mos-btn secondary" style={{ flex: "0 0 auto", padding: "8px 16px", borderRadius: 50 }} onClick={() => setShowAllApps(false)}>Close</button>
             </div>
 
-            {customApps.length > 0 && (
+            {showAllApps === "apps" && (
               <>
-                <p className="mos-section-label">Your apps</p>
-                <div className="mos-app-grid" style={{ width: "100%" }}>
-                  {customApps.map((app) => {
+                <p className="mos-section-label">System</p>
+                <div className="mos-app-grid">
+                  {SYSTEM_APPS.map((app) => {
                     const pinnedNow = isPinned(app.id);
+                    const img = app.image || (app.url ? faviconFor(app.url) : "");
                     return (
                       <div
                         key={app.id}
                         className={`mos-app-tile ${pinnedNow ? "pinned" : ""}`}
                         onClick={() => {
-                          openWebUrl(app.url, app.name, app.icon);
+                          if (app.builtin) openBuiltin(app.builtin);
+                          else if (app.url) openWebUrl(app.url, app.name, app.icon);
                           setShowAllApps(false);
                         }}
                       >
@@ -315,45 +298,84 @@ export function MathsOS() {
                           className={`mos-pin-btn ${pinnedNow ? "is-pinned" : ""}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            togglePin({ id: app.id, type: "custom", name: app.name, icon: app.icon, url: app.url });
+                            togglePin({ id: app.id, type: "app", name: app.name, icon: app.icon, url: app.url, builtin: app.builtin });
                           }}
                         >{pinnedNow ? "📌" : "📍"}</button>
-                        <span className="mos-app-icon">{app.icon}</span>
+                        <div className="mos-app-img">
+                          {img ? <img src={img} alt="" onError={(e) => ((e.currentTarget.style.display = "none"))} /> : null}
+                          <span className="mos-app-emoji">{app.icon}</span>
+                        </div>
                         <span className="mos-app-name">{app.name}</span>
                       </div>
                     );
                   })}
                 </div>
+
+                {customApps.length > 0 && (
+                  <>
+                    <p className="mos-section-label">Your apps</p>
+                    <div className="mos-app-grid">
+                      {customApps.map((app) => {
+                        const pinnedNow = isPinned(app.id);
+                        const img = faviconFor(app.url);
+                        return (
+                          <div
+                            key={app.id}
+                            className={`mos-app-tile ${pinnedNow ? "pinned" : ""}`}
+                            onClick={() => {
+                              openWebUrl(app.url, app.name, app.icon);
+                              setShowAllApps(false);
+                            }}
+                          >
+                            <button
+                              className={`mos-pin-btn ${pinnedNow ? "is-pinned" : ""}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                togglePin({ id: app.id, type: "custom", name: app.name, icon: app.icon, url: app.url });
+                              }}
+                            >{pinnedNow ? "📌" : "📍"}</button>
+                            <div className="mos-app-img">
+                              {img ? <img src={img} alt="" onError={(e) => ((e.currentTarget.style.display = "none"))} /> : null}
+                              <span className="mos-app-emoji">{app.icon}</span>
+                            </div>
+                            <span className="mos-app-name">{app.name}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                <button
+                  className="mos-btn secondary"
+                  style={{ width: "auto", padding: "10px 22px", borderRadius: 50, marginTop: 10, alignSelf: "flex-start" }}
+                  onClick={() => { setAddOpen(true); setShowAllApps(false); }}
+                >➕ Add Custom App</button>
               </>
             )}
 
-            <button
-              className="mos-btn secondary"
-              style={{ width: "auto", padding: "10px 22px", borderRadius: 50, marginTop: 10 }}
-              onClick={() => { setAddOpen(true); setShowAllApps(false); }}
-            >➕ Add Custom App</button>
-
-            <p className="mos-section-label">Games</p>
-            <div className="mos-game-grid" style={{ width: "100%" }}>
-              {GAMES.map((g) => {
-                const pinnedNow = isPinned(g.id);
-                return (
-                  <div key={g.id} className="mos-game-card" onClick={() => { openGame(g); setShowAllApps(false); }}>
-                    <div className="mos-game-thumb" style={{ background: `linear-gradient(135deg, ${g.grad[0]}, ${g.grad[1]})` }}>
-                      {g.icon}
+            {showAllApps === "games" && (
+              <div className="mos-game-grid">
+                {GAMES.map((g) => {
+                  const pinnedNow = isPinned(g.id);
+                  return (
+                    <div key={g.id} className="mos-game-card" onClick={() => { openGame(g); setShowAllApps(false); }}>
+                      <div className="mos-game-thumb" style={{ background: `linear-gradient(135deg, ${g.grad[0]}, ${g.grad[1]})` }}>
+                        {g.image ? <img src={g.image} alt={g.name} /> : <span className="mos-game-emoji">{g.icon}</span>}
+                      </div>
+                      <div className="mos-game-name">{g.name}</div>
+                      <button
+                        className={`mos-game-pin ${pinnedNow ? "is-pinned" : ""}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          togglePin({ id: g.id, type: "game", name: g.name, icon: g.icon, url: g.url });
+                        }}
+                      >{pinnedNow ? "📌" : "📍"}</button>
                     </div>
-                    <div className="mos-game-name">{g.name}</div>
-                    <button
-                      className={`mos-game-pin ${pinnedNow ? "is-pinned" : ""}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        togglePin({ id: g.id, type: "game", name: g.name, icon: g.icon, url: g.url });
-                      }}
-                    >{pinnedNow ? "📌" : "📍"}</button>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -367,7 +389,7 @@ export function MathsOS() {
         <DockBtn icon="🌐" label="Browse" onClick={() => openBuiltin("browse")} />
         <DockBtn icon="💬" label="Chat" onClick={() => openBuiltin("messages")} />
         <DockBtn icon="👥" label="Friends" onClick={() => openBuiltin("friends")} />
-        <DockBtn icon="🎮" label="Games" onClick={() => setShowAllApps(true)} />
+        <DockBtn icon="🎮" label="Games" onClick={() => setShowAllApps("games")} />
         <DockBtn icon="⚙️" label="Settings" onClick={() => openBuiltin("settings")} />
         <div className="mos-dock-sep" />
         <div className="mos-dock-pinned">
@@ -405,7 +427,7 @@ export function MathsOS() {
           ))}
         </div>
         <div className="mos-dock-sep" />
-        <DockBtn icon="➕" label="Apps" onClick={() => setShowAllApps(true)} />
+        <DockBtn icon="🧩" label="Apps" onClick={() => setShowAllApps("apps")} />
       </div>
 
       {/* LAUNCHER */}

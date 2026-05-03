@@ -225,23 +225,41 @@ export function MessagesApp() {
               </div>
             </div>
             <div className="mos-msg-thread" ref={threadRef}>
-              {messages.map((m) => {
-                const mine = m.sender_id === user?.id;
-                return (
-                  <div key={m.id} className={`mos-bubble ${mine ? "mine" : "theirs"}`}>
-                    {m.content_type === "sticker" && m.sticker_url ? (
-                      <img src={m.sticker_url} alt="sticker" style={{ maxWidth: 160, display: "block" }} />
-                    ) : (
-                      m.content
-                    )}
-                    {m.created_at && (
-                      <div className="mos-bubble-meta">
-                        {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {(() => {
+                const out: React.ReactNode[] = [];
+                let lastDay = "";
+                let lastSender: string | number | null = null;
+                messages.forEach((m, i) => {
+                  const d = m.created_at ? new Date(m.created_at) : new Date();
+                  const day = d.toDateString();
+                  if (day !== lastDay) {
+                    const today = new Date().toDateString();
+                    const yest = new Date(Date.now() - 864e5).toDateString();
+                    const label = day === today ? "Today" : day === yest ? "Yesterday" : d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+                    out.push(<div key={`day-${i}`} className="mos-chat-day">{label}</div>);
+                    lastDay = day;
+                    lastSender = null;
+                  }
+                  const mine = m.sender_id === user?.id;
+                  const cont = lastSender === m.sender_id;
+                  lastSender = m.sender_id;
+                  out.push(
+                    <div key={m.id} className={`mos-bubble ${mine ? "mine" : "theirs"} ${cont ? "cont" : ""}`}>
+                      {m.content_type === "sticker" && m.sticker_url ? (
+                        <img src={m.sticker_url} alt="sticker" style={{ maxWidth: 160, display: "block" }} />
+                      ) : (
+                        m.content
+                      )}
+                      {m.created_at && (
+                        <div className="mos-bubble-meta">
+                          {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                });
+                return out;
+              })()}
               {theirTyping && (
                 <div className="mos-typing">
                   <span className="mos-typing-dot" />
@@ -250,6 +268,11 @@ export function MessagesApp() {
                   <span style={{ marginLeft: 4 }}>typing…</span>
                 </div>
               )}
+            </div>
+            <div className="mos-chat-emojibar">
+              {["👋","😂","❤️","🔥","🎉","👍","😎","😢","🙏","🤔","💯","🚀"].map((e) => (
+                <button key={e} className="mos-chat-emoji" onClick={() => setDraft((d) => d + e)}>{e}</button>
+              ))}
             </div>
             <div className="mos-msg-composer">
               <input
