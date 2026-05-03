@@ -6,6 +6,7 @@ import {
   ICON_OPTIONS,
   SYSTEM_APPS,
   WALLPAPERS,
+  faviconFor,
   type BuiltinAppId,
   type CustomApp,
   type Game,
