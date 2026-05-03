@@ -91,9 +91,21 @@ export function WindowFrame({ win, children }: { win: WinState; children?: React
             className="mos-mac-light max"
             onClick={(e) => {
               e.stopPropagation();
+              const el = frameRef.current;
+              if (!el) return;
+              if (document.fullscreenElement) {
+                document.exitFullscreen?.();
+              } else {
+                // Make sure it's maximized inside the OS too so it looks right inside fullscreen.
+                if (!win.maximized) toggleMax(win.id);
+                el.requestFullscreen?.().catch(() => {});
+              }
+            }}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
               toggleMax(win.id);
             }}
-            title={win.maximized ? "Restore" : "Maximize"}
+            title="Fullscreen (double-click: maximize)"
           />
         </div>
         <span className="mos-window-title">
