@@ -76,8 +76,8 @@ export function Launcher({
             <div
               key={i.id}
               className={`mos-launcher-row ${n === idx ? "active" : ""}`}
-              onMouseEnter={() => setIdx(n)}
-              onClick={() => fire(i)}
+              onMouseMove={() => { if (idx !== n) setIdx(n); }}
+              onMouseDown={(e) => { e.preventDefault(); fire(i); }}
             >
               <span style={{ fontSize: "1.4em" }}>{i.icon}</span>
               <span style={{ flex: 1 }}>
