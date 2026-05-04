@@ -63,7 +63,7 @@ export const SYSTEM_APPS: SystemApp[] = [
 ];
 
 export const GAMES: Game[] = [
-  { id: "drive-mad", name: "Drive Mad", icon: "🏎️", url: "https://games.playtropolis.com/drive-mad-v2/", grad: ["#1a0030", "#3d0060"], image: "/img/drive-mad.png" },
+  { id: "drive-mad", name: "Drive Mad", icon: "🏎️", url: "https://games.playtropolis.com/drive-mad-v2/", grad: ["#1a0030", "#3d0060"], image: "https://raw.githubusercontent.com/gabriel-oli-ren/maths-os/main/public/img/drive-mad.png" },
   { id: "poly-track", name: "Poly Track", icon: "🏁", url: "https://html-classic.itch.zone/html/16755713/index.html?v=1773141754", grad: ["#001a30", "#003d60"], image: "/img/polytrack.png" },
   { id: "odd-bot", name: "Odd Bot Out", icon: "🤖", url: "https://games.playtropolis.com/odd-bot-out/", grad: ["#001a20", "#003d40"], image: "/img/odd-bot-out.png" },
   { id: "stunt-bike", name: "Stunt Bike Extreme", icon: "🏍️", url: "https://games.playtropolis.com/stunt-bike-extreme/", grad: ["#1a1000", "#3d2800"], image: "/img/stunt-bike-extreme.png" },
