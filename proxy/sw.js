@@ -1,5 +1,5 @@
 // Service Worker para interceptar fetch y redirigir al Worker
-const PROXY_WORKER = 'https://proxy.mathssupport.cat'; // tu Worker
+const PROXY_WORKER = 'https://search.mathssupport.cat'; // tu Worker
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
