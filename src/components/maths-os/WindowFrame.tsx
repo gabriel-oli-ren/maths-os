@@ -117,9 +117,14 @@ export function WindowFrame({ win, children }: { win: WinState; children?: React
             className="mos-window-newtab"
             onClick={(e) => {
               e.stopPropagation();
-              window.open(win.rawUrl, "_blank", "noopener");
+              const target = win.src || win.rawUrl!;
+              const w = window.open("about:blank", "_blank");
+              if (!w) return;
+              w.document.open();
+              w.document.write(`<!DOCTYPE html><html><head><title>about:blank</title><style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{width:100%;height:100%;border:0}</style></head><body><iframe src="${target.replace(/"/g, "&quot;")}" allow="fullscreen; autoplay; gamepad; clipboard-read; clipboard-write" allowfullscreen></iframe></body></html>`);
+              w.document.close();
             }}
-            title="Open in new tab"
+            title="Open in about:blank"
           >
             ↗
           </button>
