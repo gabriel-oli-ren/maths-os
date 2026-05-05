@@ -281,8 +281,8 @@ export const Route = createFileRoute("/api/public/proxy")({
     handlers: {
       OPTIONS: async () =>
         new Response(null, { status: 204, headers: CORS_HEADERS }),
-      GET: async ({ request }) => handle(request),
-      POST: async ({ request }) => handle(request),
+      GET: async ({ request }: { request: Request }) => handle(request),
+      POST: async ({ request }: { request: Request }) => handle(request),
     },
   },
-});
+} as any);
