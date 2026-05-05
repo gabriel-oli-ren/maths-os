@@ -99,7 +99,9 @@ export const GAMES: Game[] = [
   { id: "fallzone", name: "Fallzone.io", icon: "🪂", url: "https://fallzone.gabriel-oli-ren-micro.workers.dev/", grad: ["#1a0010", "#3d0030"] },
   { id: "cookie-clicker", name: "Cookie Clicker", icon: "🍪", url: "https://orteil.dashnet.org/cookieclicker/", grad: ["#1a1000", "#3d2800"], image: IMG("cookie.png") },
   { id: "goober-tag", name: "Goober Tag", icon: "🏃", url: "https://blobby-chase.lovable.app/", grad: ["#001020", "#002040"] },
-  { id: "duck-life", name: "Duck Life 4", icon: "🦆", url: "https://www.mathplayground.com/duck4/index.html", grad: ["#1a1a00", "#3d3d10"] },
+  { id: "duck-life", name: "Duck Life 4", icon: "🦆", url: "https://www.mathplayground.com/duck4/index.html", grad: ["#1a1a00", "#3d3d10"], image: IMG("duck-life.png") },
+  { id: "openfront", name: "Openfront", icon: "🌍", url: "https://openfront.io/", grad: ["#0a1a2a", "#1a3d5a"], image: IMG("openfront.png") },
+  { id: "granny", name: "Granny", icon: "👵", url: "https://html5.gamemonetize.co/granny/", grad: ["#1a0000", "#3d0a0a"], image: IMG("granny.png") },
 ];
 
 export const ICON_OPTIONS = ["🌐","🔗","⭐","🎯","📌","🧩","🛠️","💡","🔑","📁","🖥️","📱","🎨","🏆","💼","📊","🔔","🗂️","🌟","⚡","🎮","📺","🎵","📚","🧮","✏️","📷","💬"];
